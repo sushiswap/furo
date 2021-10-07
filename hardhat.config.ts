@@ -39,6 +39,7 @@ const config: HardhatUserConfig = {
     coinmarketcap: process.env.COINMARKETCAP_API_KEY,
     currency: "USD",
     enabled: process.env.REPORT_GAS === "true",
+    excludeContracts: ["BentoBoxV1", "ERC20Mock", "ERC20", "WETH9"],
   },
   namedAccounts: {
     deployer: {
@@ -163,18 +164,40 @@ const config: HardhatUserConfig = {
     ),
   },
   solidity: {
-    version: "0.6.12",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200,
+    compilers: [
+      {
+        version: "0.8.7",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 99999,
+          },
+        },
       },
-    },
+      {
+        version: "0.6.12",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 99999,
+          },
+        },
+      },
+      {
+        version: "0.5.0",
+        settings: {
+          optimizer: {
+            enabled: false,
+            runs: 200,
+          },
+        },
+      },
+    ]
   },
-  tenderly: {
-    project: process.env.TENDERLY_PROJECT,
-    username: process.env.TENDERLY_USERNAME,
-  },
+  // tenderly: {
+  //   project: process.env.TENDERLY_PROJECT,
+  //   username: process.env.TENDERLY_USERNAME,
+  // },
   watcher: {
     compile: {
       tasks: ["compile"],
