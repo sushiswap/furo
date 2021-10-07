@@ -2,10 +2,10 @@
 
 pragma solidity >=0.8.0;
 
-import "./interfaces/ISwapReceiver.sol";
-import "./interfaces/IBentoBoxMinimal.sol";
-import "./libraries/UniswapV2Library.sol";
-import "./libraries/SafeERC20.sol";
+import "../interfaces/ISwapReceiver.sol";
+import "../interfaces/IBentoBoxMinimal.sol";
+import "../libraries/UniswapV2Library.sol";
+import "../libraries/SafeERC20.sol";
 
 contract SwapReceiverMalicious is ISwapReceiver {
     using SafeERC20 for IERC20;
