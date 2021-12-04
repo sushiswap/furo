@@ -23,6 +23,7 @@ interface IFuro {
         bool fromBento
     )
         external
+        payable
         returns (
             uint256 streamId,
             uint256 depositedShares,
