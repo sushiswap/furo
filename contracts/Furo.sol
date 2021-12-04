@@ -79,7 +79,13 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
 
         uint256 timeDifference = endTime - startTime;
 
-        depositedShares = _depositToken(token, msg.sender, address(this), amount, fromBentoBox);
+        depositedShares = _depositToken(
+            token,
+            msg.sender,
+            address(this),
+            amount,
+            fromBentoBox
+        );
 
         require(depositedShares >= timeDifference, "Furo: deposit too small");
         require(
@@ -139,22 +145,14 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
         } else {
             to = stream.recipient;
         }
-        if (toBentoBox) {
-            bentoBox.transfer(
-                stream.token,
-                address(this),
-                to,
-                sharesToWithdraw
-            );
-        } else {
-            bentoBox.withdraw(
-                stream.token,
-                address(this),
-                to,
-                0,
-                sharesToWithdraw
-            );
-        }
+
+        _transferToken(
+            stream.token,
+            address(this),
+            to,
+            sharesToWithdraw,
+            toBentoBox
+        );
 
         emit LogWithdrawFromStream(
             streamId,
@@ -192,11 +190,12 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
             toToken,
             address(this)
         );
-        bentoBox.transfer(
+        _transferToken(
             stream.token,
             address(this),
             address(swapReceiver),
-            sharesToWithdraw
+            sharesToWithdraw,
+            true
         );
         swapReceiver.onSwapReceive(
             stream.token,
@@ -213,22 +212,14 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
             toTokenBalanceAfter >= toTokenBalanceBefore + amountOutMin,
             "Furo: received too less"
         );
-        if (toBentoBox) {
-            bentoBox.transfer(
-                toToken,
-                address(this),
-                stream.recipient,
-                toTokenBalanceAfter - toTokenBalanceBefore
-            );
-        } else {
-            bentoBox.withdraw(
-                toToken,
-                address(this),
-                stream.recipient,
-                0,
-                toTokenBalanceAfter - toTokenBalanceBefore
-            );
-        }
+
+        _transferToken(
+            toToken,
+            address(this),
+            stream.recipient,
+            toTokenBalanceAfter - toTokenBalanceBefore,
+            toBentoBox
+        );
 
         emit LogWithdrawFromStream(
             streamId,
@@ -251,35 +242,20 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
 
         delete streams[streamId];
 
-        if (toBentoBox) {
-            bentoBox.transfer(
-                stream.token,
-                address(this),
-                stream.recipient,
-                recipientBalance
-            );
-            bentoBox.transfer(
-                stream.token,
-                address(this),
-                stream.sender,
-                senderBalance
-            );
-        } else {
-            bentoBox.withdraw(
-                stream.token,
-                address(this),
-                stream.recipient,
-                0,
-                recipientBalance
-            );
-            bentoBox.withdraw(
-                stream.token,
-                address(this),
-                stream.sender,
-                0,
-                senderBalance
-            );
-        }
+        _transferToken(
+            stream.token,
+            address(this),
+            stream.recipient,
+            recipientBalance,
+            toBentoBox
+        );
+        _transferToken(
+            stream.token,
+            address(this),
+            stream.sender,
+            senderBalance,
+            toBentoBox
+        );
 
         emit LogCancelStream(
             streamId,
@@ -369,6 +345,20 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
                     0
                 );
             }
+        }
+    }
+
+    function _transferToken(
+        address token,
+        address from,
+        address to,
+        uint256 amount,
+        bool toBentoBox
+    ) internal {
+        if (toBentoBox) {
+            bentoBox.transfer(token, from, to, amount);
+        } else {
+            bentoBox.withdraw(token, from, to, 0, amount);
         }
     }
 }
