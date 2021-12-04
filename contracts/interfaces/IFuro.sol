@@ -17,8 +17,8 @@ interface IFuro {
     function createStream(
         address recipient,
         address token,
-        uint256 startTime,
-        uint256 endTime,
+        uint64 startTime,
+        uint64 endTime,
         uint256 amount, /// @dev in token amount and not in shares
         bool fromBento
     )
@@ -93,8 +93,8 @@ interface IFuro {
         address token;
         uint128 depositedShares;
         uint128 withdrawnShares;
-        uint256 rate;
-        uint256 startTime;
-        uint256 endTime;
+        uint128 rate;
+        uint64 startTime;
+        uint64 endTime;
     }
 }

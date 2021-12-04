@@ -206,7 +206,7 @@ describe("Stream Creation", function () {
 
   it("should not be able create stream when startTime is less than block.timestamp", async function () {
     const startTime = await latest();
-    const endTime = startTime.add(getBigNumber(3600));
+    const endTime = startTime.add(BigNumber.from(3600));
     const timeDifference = endTime.sub(startTime);
 
     const amount = getBigNumber(10000);
@@ -476,7 +476,7 @@ describe("Stream Balances", function () {
     const streamData = await snapshotStreamData(furo, streamId);
     const timeNow = await latest();
     const randSec = Math.floor(
-      Math.random() * (endTime - startTime.add(1)) + startTime.add(1)
+      Math.random() * (endTime - startTime) + startTime
     );
     const differnceInTime = startTime.sub(timeNow).add(randSec);
     await increase(duration.seconds(differnceInTime.toNumber()));
@@ -519,7 +519,7 @@ describe("Stream Balances", function () {
     const streamData = await snapshotStreamData(furo, streamId);
     const timeNow = await latest();
     const randSec = Math.floor(
-      Math.random() * (endTime - startTime.add(1)) + startTime.add(1)
+      Math.random() * (endTime - startTime) + startTime
     );
     const differnceInTime = endTime.sub(timeNow).add(randSec);
     await increase(duration.seconds(differnceInTime.toNumber()));
@@ -680,7 +680,7 @@ describe("Stream Withdraw", function () {
     const streamData = await snapshotStreamData(furo, streamId);
     const timeNow = await latest();
     const randSec = Math.floor(
-      Math.random() * (endTime - startTime.add(1)) + startTime.add(1)
+      Math.random() * (endTime - startTime) + startTime
     );
     const differnceInTime = startTime.sub(timeNow).add(randSec);
     await increase(duration.seconds(differnceInTime));
@@ -718,7 +718,7 @@ describe("Stream Withdraw", function () {
     const streamData = await snapshotStreamData(furo, streamId);
     const timeNow = await latest();
     const randSec = Math.floor(
-      Math.random() * (endTime - startTime.add(1)) + startTime.add(1)
+      Math.random() * (endTime - startTime) + startTime
     );
     const differnceInTime = startTime.sub(timeNow).add(randSec);
     await increase(duration.seconds(differnceInTime));

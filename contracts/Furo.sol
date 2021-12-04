@@ -28,7 +28,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
     }
 
     constructor(IBentoBoxMinimal _bentoBox) {
-        owner = msg.sender;
         bentoBox = _bentoBox;
         streamIds = 1;
         _bentoBox.registerProtocol();
@@ -54,8 +53,8 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
     function createStream(
         address recipient,
         address token,
-        uint256 startTime,
-        uint256 endTime,
+        uint64 startTime,
+        uint64 endTime,
         uint256 amount, /// @dev in token amount and not in shares
         bool fromBentoBox
     )
@@ -110,7 +109,7 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
             recipient: recipient,
             token: token,
             depositedShares: uint128(depositedShares),
-            rate: rate,
+            rate: uint128(rate),
             withdrawnShares: 0,
             startTime: startTime,
             endTime: endTime
