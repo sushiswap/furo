@@ -348,7 +348,7 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
         uint256 amount,
         bool fromBentoBox
     ) internal returns (uint256 depositedShares) {
-        if (token == wETH && address(this).balance > 0) {
+        if (token == wETH && address(this).balance >= amount) {
             (, depositedShares) = bentoBox.deposit{value: amount}(
                 address(0),
                 from,
