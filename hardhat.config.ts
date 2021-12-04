@@ -22,14 +22,14 @@ import { removeConsoleLog } from "hardhat-preprocessor";
 
 let accounts;
 
-if(process.env.PRIVATE_KEY) {
+if (process.env.PRIVATE_KEY) {
   accounts = [process.env.PRIVATE_KEY];
-}else {
+} else {
   accounts = {
-      mnemonic:
-        process.env.MNEMONIC ||
-        "test test test test test test test test test test test junk",
-    };
+    mnemonic:
+      process.env.MNEMONIC ||
+      "test test test test test test test test test test test junk",
+  };
 }
 
 // This is a sample Hardhat task. To learn how to create your own go to
@@ -204,7 +204,7 @@ const config: HardhatUserConfig = {
           },
         },
       },
-    ]
+    ],
   },
   // tenderly: {
   //   project: process.env.TENDERLY_PROJECT,
