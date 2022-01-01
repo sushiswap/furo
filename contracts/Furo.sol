@@ -15,17 +15,36 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
     mapping(uint256 => Stream) public streams;
     mapping(ISwapReceiver => bool) public whitelistedReceivers;
 
+    // custom errors
+    error NotSenderOrRecipient();
+    error InvalidStream();
+    error InvalidAddressZero();
+    error InvalidAddressFuro();
+    error InvalidAddressSender();
+    error ZeroDeposit();
+    error InvalidStartTime();
+    error InvalidEndTime();
+    error InvalidDepositSmall();
+    error InvalidDepositMultipleOfTime();
+    error InvalidWithdrawTooMuch();
+    error InvalidSwapper();
+    error NotRecipient();
+    error ReceivedTooLess();
+
     modifier onlySenderOrRecipient(uint256 streamId) {
-        require(
-            msg.sender == streams[streamId].sender ||
-                msg.sender == streams[streamId].recipient,
-            "Furo: !sender or !recipient"
-        );
+        if (
+            msg.sender != streams[streamId].sender &&
+            msg.sender != streams[streamId].recipient
+        ) {
+            revert NotSenderOrRecipient();
+        }
         _;
     }
 
     modifier validStream(uint256 streamId) {
-        require(streams[streamId].exists, "Furo: Invalid Stream");
+        if (!(streams[streamId].exists)) {
+            revert InvalidStream();
+        }
         _;
     }
 
@@ -70,12 +89,12 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
             uint256 rate
         )
     {
-        require(recipient != address(0), "Furo: to address 0");
-        require(recipient != address(this), "Furo: to contract");
-        require(recipient != msg.sender, "Furo: to caller");
-        require(amount > 0, "Furo: 0 deposit");
-        require(startTime >= block.timestamp, "Furo: invalid startTime");
-        require(endTime > startTime, "Furo: invalid endTime");
+        if (recipient == address(0)) revert InvalidAddressZero();
+        if (recipient == address(this)) revert InvalidAddressFuro();
+        if (recipient == msg.sender) revert InvalidAddressSender();
+        if (amount == 0) revert ZeroDeposit();
+        if (startTime < block.timestamp) revert InvalidStartTime();
+        if (endTime <= startTime) revert InvalidEndTime();
 
         uint256 timeDifference = endTime - startTime;
 
@@ -87,11 +106,9 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
             fromBentoBox
         );
 
-        require(depositedShares >= timeDifference, "Furo: deposit too small");
-        require(
-            depositedShares % timeDifference == 0,
-            "Furo: not multiple of time"
-        );
+        if (depositedShares < timeDifference) revert InvalidDepositSmall();
+        if (depositedShares % timeDifference != 0)
+            revert InvalidDepositMultipleOfTime();
 
         rate = depositedShares / timeDifference;
 
@@ -135,10 +152,8 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
     {
         Stream storage stream = streams[streamId];
         (, recipientBalance) = _balanceOf(stream);
-        require(
-            recipientBalance >= sharesToWithdraw,
-            "Furo: withdraw too much"
-        );
+        if (recipientBalance < sharesToWithdraw)
+            revert InvalidWithdrawTooMuch();
         stream.withdrawnShares += uint128(sharesToWithdraw);
         if (msg.sender == stream.recipient && withdrawTo != address(0)) {
             to = withdrawTo;
@@ -177,9 +192,9 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
         validStream(streamId)
         returns (uint256 recipientBalance)
     {
-        require(whitelistedReceivers[swapReceiver], "Furo: !whitelisted");
+        if (!whitelistedReceivers[swapReceiver]) revert InvalidSwapper();
         Stream storage stream = streams[streamId];
-        require(msg.sender == stream.recipient, "Furo: !recipient");
+        if (msg.sender != stream.recipient) revert NotRecipient();
         (, recipientBalance) = _balanceOf(stream);
         require(
             recipientBalance >= sharesToWithdraw,
@@ -208,10 +223,8 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
             toToken,
             address(this)
         );
-        require(
-            toTokenBalanceAfter >= toTokenBalanceBefore + amountOutMin,
-            "Furo: received too less"
-        );
+        if (toTokenBalanceAfter < toTokenBalanceBefore + amountOutMin)
+            revert ReceivedTooLess();
 
         _transferToken(
             toToken,
