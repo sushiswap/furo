@@ -33,8 +33,8 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
 
     modifier onlySenderOrRecipient(uint256 streamId) {
         if (
-            !(msg.sender == streams[streamId].sender) ||
-            !(msg.sender == streams[streamId].recipient)
+            msg.sender != streams[streamId].sender &&
+            msg.sender != streams[streamId].recipient
         ) {
             revert NotSenderOrRecipient();
         }

@@ -21,3 +21,7 @@ export async function snapshot(): Promise<Number> {
 export async function restore(snapshotId: any): Promise<Number> {
   return ethers.provider.send("evm_revert", [snapshotId]);
 }
+
+export function customError(errorName: string): string {
+  return `VM Exception while processing transaction: reverted with custom error '${errorName}()'`;
+}

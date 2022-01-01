@@ -17,6 +17,7 @@ import {
   duration,
   ADDRESS_ZERO,
   getSignedMasterContractApprovalData,
+  customError,
 } from "./harness";
 import { expect } from "chai";
 
@@ -224,7 +225,7 @@ describe("Stream Creation", function () {
         amountToDeposit,
         true
       )
-    ).to.be.revertedWith("Furo: invalid startTime");
+    ).to.be.revertedWith(customError("InvalidStartTime"));
   });
 
   it("should not be able create stream when endTime is less than startTime", async function () {
@@ -237,7 +238,7 @@ describe("Stream Creation", function () {
         getBigNumber(1000),
         true
       )
-    ).to.be.revertedWith("Furo: invalid endTime");
+    ).to.be.revertedWith(customError("InvalidEndTime"));
   });
 
   it("should not stream to invalid recipients", async function () {
@@ -261,7 +262,7 @@ describe("Stream Creation", function () {
         amountToDeposit,
         true
       )
-    ).to.be.revertedWith("Furo: to address 0");
+    ).to.be.revertedWith(customError("InvalidAddressZero"));
 
     await expect(
       furo.createStream(
@@ -272,7 +273,7 @@ describe("Stream Creation", function () {
         amountToDeposit,
         true
       )
-    ).to.be.revertedWith("Furo: to contract");
+    ).to.be.revertedWith(customError("InvalidAddressFuro"));
 
     await expect(
       furo.createStream(
@@ -283,7 +284,7 @@ describe("Stream Creation", function () {
         amountToDeposit,
         true
       )
-    ).to.be.revertedWith("Furo: to caller");
+    ).to.be.revertedWith(customError("InvalidAddressSender"));
   });
 
   it("should not stream when invalid deposit", async function () {
@@ -307,7 +308,7 @@ describe("Stream Creation", function () {
         0,
         true
       )
-    ).to.be.revertedWith("Furo: 0 deposit");
+    ).to.be.revertedWith(customError("ZeroDeposit"));
 
     await expect(
       furo.createStream(
@@ -318,7 +319,7 @@ describe("Stream Creation", function () {
         1,
         true
       )
-    ).to.be.revertedWith("Furo: deposit too small");
+    ).to.be.revertedWith(customError("InvalidDepositSmall"));
 
     await expect(
       furo.createStream(
@@ -329,7 +330,7 @@ describe("Stream Creation", function () {
         getBigNumber(1000),
         true
       )
-    ).to.be.revertedWith("Furo: not multiple of time");
+    ).to.be.revertedWith(customError("InvalidDepositMultipleOfTime"));
   });
 });
 
@@ -723,7 +724,7 @@ describe("Stream Balances", function () {
 
   it("should not get balances from invalid stream id", async function () {
     await expect(furo.balanceOf(streamId + 1)).to.be.revertedWith(
-      "Furo: Invalid Stream"
+      customError("InvalidStream")
     );
   });
 });
@@ -854,7 +855,7 @@ describe("Stream Withdraw", function () {
       furo
         .connect(accounts[2])
         .withdrawFromStream(streamId, 0, ADDRESS_ZERO, true)
-    ).to.be.revertedWith("Furo: !sender or !recipient");
+    ).to.be.revertedWith(customError("NotSenderOrRecipient"));
 
     await furo
       .connect(accounts[0])
@@ -969,7 +970,7 @@ describe("Stream Withdraw", function () {
     );
     await expect(
       furo.withdrawFromStream(streamId, 1, ADDRESS_ZERO, true)
-    ).to.be.revertedWith("Furo: withdraw too much");
+    ).to.be.revertedWith(customError("InvalidWithdrawTooMuch"));
 
     const { senderBalance, recipientBalance } = await getStreamBalance(
       furo,
@@ -996,7 +997,7 @@ describe("Stream Withdraw", function () {
         ADDRESS_ZERO,
         true
       )
-    ).to.be.revertedWith("Furo: withdraw too much");
+    ).to.be.revertedWith(customError("InvalidWithdrawTooMuch"));
   });
 
   it("should allow to withdrawTo if called by recipient only", async function () {
@@ -1164,20 +1165,20 @@ describe("Stream Cancel", function () {
   it("should only allow sender or recipient to cancel the stream", async function () {
     await expect(
       furo.connect(accounts[2]).cancelStream(streamId, true)
-    ).to.be.revertedWith("Furo: !sender or !recipient");
+    ).to.be.revertedWith(customError("NotSenderOrRecipient"));
   });
 
   it("should allow sender to cancel the stream", async function () {
     await furo.connect(accounts[0]).cancelStream(streamId, true);
     await expect(snapshotStreamData(furo, streamId)).to.be.revertedWith(
-      "Furo: Invalid Stream"
+      customError("InvalidStream")
     );
   });
 
   it("should allow recipient to cancel the stream", async function () {
     await furo.connect(accounts[1]).cancelStream(streamId, true);
     await expect(snapshotStreamData(furo, streamId)).to.be.revertedWith(
-      "Furo: Invalid Stream"
+      customError("InvalidStream")
     );
   });
 
@@ -1625,7 +1626,7 @@ describe("Stream Swap Withdraw", function () {
           data,
           false
         )
-    ).to.be.revertedWith("Furo: !whitelisted");
+    ).to.be.revertedWith(customError("InvalidSwapper"));
   });
 
   it("should only be called by the stream recipient", async function () {
@@ -1650,7 +1651,7 @@ describe("Stream Swap Withdraw", function () {
           data,
           false
         )
-    ).to.be.revertedWith("Furo: !recipient");
+    ).to.be.revertedWith(customError("NotRecipient"));
   });
 
   it("should not allow receiver to provide less token than minimum", async function () {
@@ -1675,7 +1676,7 @@ describe("Stream Swap Withdraw", function () {
           data,
           false
         )
-    ).to.be.revertedWith("Furo: received too less");
+    ).to.be.revertedWith(customError("ReceivedTooLess"));
   });
 
   it("should not allow to withdraw more than available", async function () {
