@@ -15,6 +15,22 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
     mapping(uint256 => Stream) public streams;
     mapping(ISwapReceiver => bool) public whitelistedReceivers;
 
+    // custom errors
+    error NotSenderOrRecipient();
+    error InvalidStream();
+    error InvalidAddressZero();
+    error InvalidAddressFuro();
+    error InvalidAddressSender();
+    error ZeroDeposit();
+    error InvalidStartTime();
+    error InvalidEndTime();
+    error InvalidDepositSmall();
+    error InvalidDepositMultipleOfTime();
+    error InvalidWithdrawTooMuch();
+    error InvalideSwapper();
+    error NotRecipient();
+    error ReceivedTooLess();
+
     modifier onlySenderOrRecipient(uint256 streamId) {
         require(
             msg.sender == streams[streamId].sender ||
