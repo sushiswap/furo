@@ -42,7 +42,7 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
     }
 
     modifier validStream(uint256 streamId) {
-        if(!(streams[streamId].exists)) {
+        if (!(streams[streamId].exists)) {
             revert InvalidStream();
         }
         _;
@@ -107,7 +107,8 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
         );
 
         if (depositedShares < timeDifference) revert InvalidDepositSmall();
-        if (depositedShares % timeDifference != 0) revert InvalidDepositMultipleOfTime();
+        if (depositedShares % timeDifference != 0)
+            revert InvalidDepositMultipleOfTime();
 
         rate = depositedShares / timeDifference;
 
@@ -151,7 +152,8 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
     {
         Stream storage stream = streams[streamId];
         (, recipientBalance) = _balanceOf(stream);
-        if (recipientBalance < sharesToWithdraw) revert InvalidWithdrawTooMuch();
+        if (recipientBalance < sharesToWithdraw)
+            revert InvalidWithdrawTooMuch();
         stream.withdrawnShares += uint128(sharesToWithdraw);
         if (msg.sender == stream.recipient && withdrawTo != address(0)) {
             to = withdrawTo;
@@ -221,7 +223,8 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
             toToken,
             address(this)
         );
-        if (toTokenBalanceAfter < toTokenBalanceBefore + amountOutMin) revert ReceivedTooLess();
+        if (toTokenBalanceAfter < toTokenBalanceBefore + amountOutMin)
+            revert ReceivedTooLess();
 
         _transferToken(
             toToken,

@@ -365,7 +365,13 @@ describe("Stream Creation via Native Token", function () {
     bento = await BentoBoxV1.deploy(weth.address);
     furo = await Furo.deploy(bento.address, weth.address);
     await weth.approve(bento.address, getBigNumber(1000000));
-    await bento.deposit(weth.address, accounts[0].address, accounts[0].address, getBigNumber(500000), 0);
+    await bento.deposit(
+      weth.address,
+      accounts[0].address,
+      accounts[0].address,
+      getBigNumber(500000),
+      0
+    );
 
     await bento.whitelistMasterContract(furo.address, true);
 
@@ -495,7 +501,7 @@ describe("Stream Creation via Native Token", function () {
       endTime,
       amountToDeposit,
       false,
-      {value: amountToDeposit}
+      { value: amountToDeposit }
     );
 
     const newStreamId = await snapshotStreamId(furo);
@@ -522,7 +528,6 @@ describe("Stream Creation via Native Token", function () {
     expect(recipientBalance).to.be.eq(getBigNumber(0));
   });
 });
-
 
 describe("Stream Balances", function () {
   let accounts: Signer[];
