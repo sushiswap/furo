@@ -143,7 +143,6 @@ describe("Stream Creation", function () {
     );
 
     expect(oldStreamId.add(1)).to.be.eq(newStreamId);
-    expect(newStreamData.exists).to.be.eq(true);
     expect(newStreamData.sender).to.be.eq(accounts[0].address);
     expect(newStreamData.recipient).to.be.eq(accounts[1].address);
     expect(newStreamData.token).to.be.eq(tokens[0].address);
@@ -191,7 +190,6 @@ describe("Stream Creation", function () {
     );
 
     expect(oldStreamId.add(1)).to.be.eq(newStreamId);
-    expect(newStreamData.exists).to.be.eq(true);
     expect(newStreamData.sender).to.be.eq(accounts[0].address);
     expect(newStreamData.recipient).to.be.eq(accounts[1].address);
     expect(newStreamData.token).to.be.eq(tokens[0].address);
@@ -465,7 +463,6 @@ describe("Stream Creation via Native Token", function () {
     );
 
     expect(oldStreamId.add(1)).to.be.eq(newStreamId);
-    expect(newStreamData.exists).to.be.eq(true);
     expect(newStreamData.sender).to.be.eq(accounts[0].address);
     expect(newStreamData.recipient).to.be.eq(accounts[1].address);
     expect(newStreamData.token).to.be.eq(weth.address);
@@ -514,7 +511,6 @@ describe("Stream Creation via Native Token", function () {
     );
 
     expect(oldStreamId.add(1)).to.be.eq(newStreamId);
-    expect(newStreamData.exists).to.be.eq(true);
     expect(newStreamData.sender).to.be.eq(accounts[0].address);
     expect(newStreamData.recipient).to.be.eq(accounts[1].address);
     expect(newStreamData.token).to.be.eq(weth.address);
@@ -1225,7 +1221,6 @@ describe("Stream Cancel", function () {
       streamData.recipient
     );
 
-    expect(streamDataNew.exists).to.be.eq(false);
     expect(senderBentoAfter).to.be.eq(
       senderBentoBefore.add(senderBalance).sub(streamData.rate.mul(1))
     );
@@ -1260,7 +1255,6 @@ describe("Stream Cancel", function () {
       streamData.recipient
     );
 
-    expect(streamDataNew.exists).to.be.eq(false);
     expect(senderBalanceAfter).to.be.eq(
       senderBalanceBefore.add(senderBalance).sub(streamData.rate.mul(1))
     );
@@ -1305,7 +1299,6 @@ describe("Stream Cancel", function () {
       streamData.recipient
     );
 
-    expect(streamDataNew.exists).to.be.eq(false);
     expect(senderBentoAfter).to.be.eq(
       senderBentoBefore.add(senderBalance).sub(streamData.rate.mul(1))
     );
@@ -1350,7 +1343,6 @@ describe("Stream Cancel", function () {
       streamData.recipient
     );
 
-    expect(streamDataNew.exists).to.be.eq(false);
     expect(senderBentoAfter).to.be.eq(senderBentoBefore.add(senderBalance));
     expect(recipientBentoAfter).to.be.eq(
       recipientBentoBefore.add(recipientBalance)
@@ -1451,7 +1443,6 @@ describe("Stream Creation - Batchable", function () {
     );
 
     expect(oldStreamId.add(1)).to.be.eq(newStreamId);
-    expect(newStreamData.exists).to.be.eq(true);
     expect(newStreamData.sender).to.be.eq(accounts[0].address);
     expect(newStreamData.recipient).to.be.eq(accounts[1].address);
     expect(newStreamData.token).to.be.eq(tokens[0].address);

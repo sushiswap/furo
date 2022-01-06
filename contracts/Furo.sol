@@ -42,7 +42,7 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
     }
 
     modifier validStream(uint256 streamId) {
-        if (!(streams[streamId].exists)) {
+        if (!(streams[streamId].sender != address(0))) {
             revert InvalidStream();
         }
         _;
@@ -115,7 +115,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
         streamId = streamIds++;
 
         streams[streamId] = Stream({
-            exists: true,
             sender: msg.sender,
             recipient: recipient,
             token: token,

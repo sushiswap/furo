@@ -88,7 +88,6 @@ interface IFuro {
     event LogWhitelistReceiver(ISwapReceiver indexed swapReceiver, bool approved);
 
     struct Stream {
-        bool exists;
         address sender;
         address recipient;
         address token;
