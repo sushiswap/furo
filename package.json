@@ -81,6 +81,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.3.2",
+    "@rari-capital/solmate": "^6.2.0",
     "@sushiswap/core": "^1.4.2",
     "ethereumjs-util": "^7.1.2"
   }
