@@ -88,7 +88,7 @@ contract SushiPay is ERC721("Sushi pay", "SP"), BoringBatchable {
 
         require(type(uint128).max > depositedShares, "Deposit too big");
 
-        streamId = streamIds++;
+        unchecked { streamId = streamIds++; }
 
         _mint(recipient, streamId);
 
