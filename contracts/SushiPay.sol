@@ -3,9 +3,10 @@
 pragma solidity 0.8.11;
 
 import "./interfaces/IBentoBoxMinimal.sol";
+import "./utils/BoringBatchable.sol";
 import "@rari-capital/solmate/src/tokens/ERC721.sol";
 
-contract SushiPay is ERC721("Sushi pay", "SP") {
+contract SushiPay is ERC721("Sushi pay", "SP"), BoringBatchable {
 
     IBentoBoxMinimal public immutable bentoBox;
 
@@ -61,6 +62,14 @@ contract SushiPay is ERC721("Sushi pay", "SP") {
     }
 
     function tokenURI(uint256) public pure override returns (string memory) {return "";}
+
+    function approveBento(
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+    ) external payable {
+        bentoBox.setMasterContractApproval(msg.sender, address(this), true, v, r, s);
+    }
 
     function createStream(
         address controller,
@@ -143,22 +152,6 @@ contract SushiPay is ERC721("Sushi pay", "SP") {
 
     function streamBalance(uint256 streamId) external view returns (uint256 recipient, uint256 controller) {
         return _streamBalance(streams[streamId]);
-    }
-
-    function approveBentoAndCreateStream(
-        uint8 v,
-        bytes32 r,
-        bytes32 s,
-        address controller,
-        address recipient,
-        address token,
-        uint256 amount,
-        uint128 startTime,
-        uint128 endTime,
-        bool fromBentoBox
-    ) external payable {
-        bentoBox.setMasterContractApproval(msg.sender, address(this), true, v, r, s);
-        createStream(controller, recipient, token, amount, startTime, endTime, fromBentoBox);
     }
 
     function _streamBalance(Stream memory stream) internal view returns (uint256 recipient, uint256 controller) {
