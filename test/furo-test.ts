@@ -102,15 +102,10 @@ describe("Stream Creation", function () {
   });
 
   it("should be able to create stream - bento", async function () {
-    let timeDifference = endTime - startTime;
     const amount = getBigNumber(10000);
     const amountToShares = await toShare(bento, tokens[0], amount);
 
-    const amountToDeposit = await toAmount(
-      bento,
-      tokens[0],
-      amountToShares
-    );
+    const amountToDeposit = await toAmount(bento, tokens[0], amountToShares);
 
     const oldStreamId = await snapshotStreamId(furo);
     const bentoBalanceBefore = await getBentoBalance(
@@ -155,15 +150,10 @@ describe("Stream Creation", function () {
   });
 
   it("should be able to create stream - native", async function () {
-    let timeDifference = endTime - startTime;
     const amount = getBigNumber(10000);
     const amountToShares = await toShare(bento, tokens[0], amount);
 
-    const amountToDeposit = await toAmount(
-      bento,
-      tokens[0],
-      amountToShares
-    );
+    const amountToDeposit = await toAmount(bento, tokens[0], amountToShares);
 
     const oldStreamId = await snapshotStreamId(furo);
     const tokenBalanceBefore = await tokens[0].balanceOf(accounts[0].address);
@@ -202,12 +192,11 @@ describe("Stream Creation", function () {
   it("should not be able create stream when startTime is less than block.timestamp", async function () {
     const startTime = await latest();
     const endTime = startTime.add(BigNumber.from(3600));
-    const timeDifference = endTime.sub(startTime);
 
     const amount = getBigNumber(10000);
     const amountToShares = await toShare(bento, tokens[0], amount);
 
-    const amountToDeposit = amountToShares
+    const amountToDeposit = amountToShares;
 
     await expect(
       furo.createStream(
@@ -235,15 +224,10 @@ describe("Stream Creation", function () {
   });
 
   it("should not stream to invalid recipients", async function () {
-    let timeDifference = endTime - startTime;
     const amount = getBigNumber(10000);
     const amountToShares = await toShare(bento, tokens[0], amount);
 
-    const amountToDeposit = await toAmount(
-      bento,
-      tokens[0],
-      amountToShares
-    );
+    const amountToDeposit = await toAmount(bento, tokens[0], amountToShares);
 
     await expect(
       furo.createStream(
@@ -280,15 +264,8 @@ describe("Stream Creation", function () {
   });
 
   it("should not stream when invalid deposit", async function () {
-    let timeDifference = endTime - startTime;
     const amount = getBigNumber(10000);
     const amountToShares = await toShare(bento, tokens[0], amount);
-
-    const amountToDeposit = await toAmount(
-      bento,
-      tokens[0],
-      amountToShares
-    );
 
     await expect(
       furo.createStream(
@@ -405,15 +382,10 @@ describe("Stream Creation via Native Token", function () {
   });
 
   it("should be able to create stream - bento - native token", async function () {
-    let timeDifference = endTime - startTime;
     const amount = getBigNumber(10);
     const amountToShares = await toShare(bento, weth, amount);
 
-    const amountToDeposit = await toAmount(
-      bento,
-      weth,
-      amountToShares
-    );
+    const amountToDeposit = await toAmount(bento, weth, amountToShares);
     const oldStreamId = await snapshotStreamId(furo);
     const bentoBalanceBefore = await getBentoBalance(
       bento,
@@ -457,15 +429,10 @@ describe("Stream Creation via Native Token", function () {
   });
 
   it("should be able to create stream - native - native token", async function () {
-    let timeDifference = endTime - startTime;
     const amount = getBigNumber(10);
     const amountToShares = await toShare(bento, weth, amount);
 
-    const amountToDeposit = await toAmount(
-      bento,
-      weth,
-      amountToShares
-    );
+    const amountToDeposit = await toAmount(bento, weth, amountToShares);
 
     const oldStreamId = await snapshotStreamId(furo);
     const tokenBalanceBefore = await weth.balanceOf(accounts[0].address);
@@ -575,15 +542,10 @@ describe("Stream Balances", function () {
     );
     endTime = startTime.add(BigNumber.from(3600));
 
-    let timeDifference = endTime - startTime;
     const amount = getBigNumber(10000);
     const amountToShares = await toShare(bento, tokens[0], amount);
 
-    amountToDeposit = await toAmount(
-      bento,
-      tokens[0],
-      amountToShares
-    );
+    amountToDeposit = await toAmount(bento, tokens[0], amountToShares);
 
     streamId = (await snapshotStreamId(furo)).toString();
 
@@ -635,7 +597,9 @@ describe("Stream Balances", function () {
       furo,
       streamId
     );
-    const amountToBeStreamed = streamData.depositedShares.mul((await latest() - streamData.startTime)).div((streamData.endTime - streamData.startTime));
+    const amountToBeStreamed = streamData.depositedShares
+      .mul((await latest()) - streamData.startTime)
+      .div(streamData.endTime - streamData.startTime);
     expect(senderBalance).to.be.eq(amountToDeposit.sub(amountToBeStreamed));
     expect(recipientBalance).to.be.eq(amountToBeStreamed);
   });
@@ -652,13 +616,14 @@ describe("Stream Balances", function () {
       furo,
       streamId
     );
-    const amountToBeStreamed = streamData.depositedShares.mul((await latest() - streamData.startTime)).div((streamData.endTime - streamData.startTime));
+    const amountToBeStreamed = streamData.depositedShares
+      .mul((await latest()) - streamData.startTime)
+      .div(streamData.endTime - streamData.startTime);
     expect(senderBalance).to.be.eq(amountToDeposit.sub(amountToBeStreamed));
     expect(recipientBalance).to.be.eq(amountToBeStreamed);
   });
 
   it("should report correct balance at the endTime", async function () {
-    const streamData = await snapshotStreamData(furo, streamId);
     const timeNow = await latest();
     const differnceInTime = endTime.sub(timeNow);
     await increase(duration.seconds(differnceInTime.toNumber()));
@@ -671,7 +636,6 @@ describe("Stream Balances", function () {
   });
 
   it("should report correct balance after endTime 1 second has passed", async function () {
-    const streamData = await snapshotStreamData(furo, streamId);
     const timeNow = await latest();
     const differnceInTime = endTime.sub(timeNow).add(1);
     await increase(duration.seconds(differnceInTime.toNumber()));
@@ -684,7 +648,6 @@ describe("Stream Balances", function () {
   });
 
   it("should report correct balance after endTime x second has passed", async function () {
-    const streamData = await snapshotStreamData(furo, streamId);
     const timeNow = await latest();
     const randSec = Math.floor(
       Math.random() * (endTime - startTime) + startTime
@@ -778,15 +741,10 @@ describe("Stream Withdraw", function () {
     );
     endTime = startTime.add(BigNumber.from(3600));
 
-    let timeDifference = endTime - startTime;
     const amount = getBigNumber(10000);
     const amountToShares = await toShare(bento, tokens[0], amount);
 
-    amountToDeposit = await toAmount(
-      bento,
-      tokens[0],
-      amountToShares
-    );
+    amountToDeposit = await toAmount(bento, tokens[0], amountToShares);
 
     streamId = (await snapshotStreamId(furo)).toString();
 
@@ -849,7 +807,9 @@ describe("Stream Withdraw", function () {
     );
     const differnceInTime = startTime.sub(timeNow).add(randSec);
     await increase(duration.seconds(differnceInTime));
-    const amountToWithdraw = streamData.depositedShares.mul((await latest() - streamData.startTime)).div((streamData.endTime - streamData.startTime));
+    const amountToWithdraw = streamData.depositedShares
+      .mul((await latest()) - streamData.startTime)
+      .div(streamData.endTime - streamData.startTime);
     const recipientOldBentoBalance = await getBentoBalance(
       bento,
       tokens[0],
@@ -887,7 +847,9 @@ describe("Stream Withdraw", function () {
     );
     const differnceInTime = startTime.sub(timeNow).add(randSec);
     await increase(duration.seconds(differnceInTime));
-    const amountToWithdraw = streamData.depositedShares.mul((await latest() - streamData.startTime)).div((streamData.endTime - streamData.startTime));
+    const amountToWithdraw = streamData.depositedShares
+      .mul((await latest()) - streamData.startTime)
+      .div(streamData.endTime - streamData.startTime);
     const recipientOldBalance = await tokens[0].balanceOf(streamData.recipient);
 
     await furo.withdrawFromStream(
@@ -1107,15 +1069,10 @@ describe("Stream Cancel", function () {
     );
     endTime = startTime.add(BigNumber.from(3600));
 
-    let timeDifference = endTime - startTime;
     const amount = getBigNumber(10000);
     const amountToShares = await toShare(bento, tokens[0], amount);
 
-    amountToDeposit = await toAmount(
-      bento,
-      tokens[0],
-      amountToShares
-    );
+    amountToDeposit = await toAmount(bento, tokens[0], amountToShares);
 
     streamId = (await snapshotStreamId(furo)).toString();
 
@@ -1177,13 +1134,12 @@ describe("Stream Cancel", function () {
       streamData.recipient
     );
 
-
     await furo.cancelStream(streamId, true);
-    
-    const recipientBalance = streamData.depositedShares.mul((await latest() - streamData.startTime)).div((streamData.endTime - streamData.startTime));
-    const senderBalance = streamData.depositedShares.sub(recipientBalance)
 
-    const streamDataNew = await furo.streams(streamId);
+    const recipientBalance = streamData.depositedShares
+      .mul((await latest()) - streamData.startTime)
+      .div(streamData.endTime - streamData.startTime);
+    const senderBalance = streamData.depositedShares.sub(recipientBalance);
 
     const senderBentoAfter = await getBentoBalance(
       bento,
@@ -1196,9 +1152,7 @@ describe("Stream Cancel", function () {
       streamData.recipient
     );
 
-    expect(senderBentoAfter).to.be.eq(
-      senderBentoBefore.add(senderBalance)
-    );
+    expect(senderBentoAfter).to.be.eq(senderBentoBefore.add(senderBalance));
     expect(recipientBentoAfter).to.be.eq(
       recipientBentoBefore.add(recipientBalance)
     );
@@ -1219,18 +1173,17 @@ describe("Stream Cancel", function () {
     );
 
     await furo.cancelStream(streamId, false);
-    const recipientBalance = streamData.depositedShares.mul((await latest() - streamData.startTime)).div((streamData.endTime - streamData.startTime));
-    const senderBalance = streamData.depositedShares.sub(recipientBalance)
+    const recipientBalance = streamData.depositedShares
+      .mul((await latest()) - streamData.startTime)
+      .div(streamData.endTime - streamData.startTime);
+    const senderBalance = streamData.depositedShares.sub(recipientBalance);
 
-    const streamDataNew = await furo.streams(streamId);
     const senderBalanceAfter = await tokens[0].balanceOf(streamData.sender);
     const recipientBalanceAfter = await tokens[0].balanceOf(
       streamData.recipient
     );
 
-    expect(senderBalanceAfter).to.be.eq(
-      senderBalanceBefore.add(senderBalance)
-    );
+    expect(senderBalanceAfter).to.be.eq(senderBalanceBefore.add(senderBalance));
     expect(recipientBalanceAfter).to.be.eq(
       recipientBalanceBefore.add(recipientBalance)
     );
@@ -1242,7 +1195,6 @@ describe("Stream Cancel", function () {
 
     const differnceInTime = startTime.sub(timeNow);
     await increase(duration.seconds(differnceInTime.toNumber()));
-
 
     const senderBentoBefore = await getBentoBalance(
       bento,
@@ -1256,10 +1208,11 @@ describe("Stream Cancel", function () {
     );
 
     await furo.cancelStream(streamId, true);
-    const recipientBalance = streamData.depositedShares.mul((await latest() - streamData.startTime)).div((streamData.endTime - streamData.startTime));
-    const senderBalance = streamData.depositedShares.sub(recipientBalance)
+    const recipientBalance = streamData.depositedShares
+      .mul((await latest()) - streamData.startTime)
+      .div(streamData.endTime - streamData.startTime);
+    const senderBalance = streamData.depositedShares.sub(recipientBalance);
 
-    const streamDataNew = await furo.streams(streamId);
     const senderBentoAfter = await getBentoBalance(
       bento,
       tokens[0],
@@ -1271,9 +1224,7 @@ describe("Stream Cancel", function () {
       streamData.recipient
     );
 
-    expect(senderBentoAfter).to.be.eq(
-      senderBentoBefore.add(senderBalance)
-    );
+    expect(senderBentoAfter).to.be.eq(senderBentoBefore.add(senderBalance));
     expect(recipientBentoAfter).to.be.eq(
       recipientBentoBefore.add(recipientBalance)
     );
@@ -1303,7 +1254,6 @@ describe("Stream Cancel", function () {
 
     await furo.cancelStream(streamId, true);
 
-    const streamDataNew = await furo.streams(streamId);
     const senderBentoAfter = await getBentoBalance(
       bento,
       tokens[0],
@@ -1368,15 +1318,10 @@ describe("Stream Creation - Batchable", function () {
   });
 
   it("should be able to create stream - bento", async function () {
-    let timeDifference = endTime - startTime;
     const amount = getBigNumber(10000);
     const amountToShares = await toShare(bento, tokens[0], amount);
 
-    const amountToDeposit = await toAmount(
-      bento,
-      tokens[0],
-      amountToShares
-    );
+    const amountToDeposit = await toAmount(bento, tokens[0], amountToShares);
 
     const oldStreamId = await snapshotStreamId(furo);
     const tokenBalanceBefore = await tokens[0].balanceOf(accounts[0].address);
