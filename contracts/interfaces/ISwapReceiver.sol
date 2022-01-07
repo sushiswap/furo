@@ -11,5 +11,10 @@ interface ISwapReceiver {
 }
 
 interface IRecipient {
-    function onTokensReceived(bytes calldata data) external;
+    function onTokensReceived(
+        address token,
+        uint256 sharesReceived,
+        bool inBentoBox,
+        bytes calldata data
+    ) external;
 }

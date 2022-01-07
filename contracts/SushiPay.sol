@@ -123,7 +123,7 @@ contract SushiPay is ERC721("Sushi pay", "SP"), BoringBatchable {
 
         emit Withdraw(streamId, msg.sender, sharesWithdrawn);
 
-        if (data.length != 0) IRecipient(to).onTokensReceived(data);
+        if (data.length != 0) IRecipient(to).onTokensReceived(stream.token, sharesWithdrawn, toBentoBox, data);
     }
 
     function endStream(uint256 streamId, bool toBentoBox) external returns(uint256 paid, uint256 reclaimed) {
