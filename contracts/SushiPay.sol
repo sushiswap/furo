@@ -3,6 +3,7 @@
 pragma solidity 0.8.11;
 
 import "./interfaces/IBentoBoxMinimal.sol";
+import { IRecipient } from "./interfaces/ISwapReceiver.sol";
 import "./utils/BoringBatchable.sol";
 import "@rari-capital/solmate/src/tokens/ERC721.sol";
 
@@ -66,7 +67,7 @@ contract SushiPay is ERC721("Sushi pay", "SP"), BoringBatchable {
     function approveBento(
         uint8 v,
         bytes32 r,
-        bytes32 s,
+        bytes32 s
     ) external payable {
         bentoBox.setMasterContractApproval(msg.sender, address(this), true, v, r, s);
     }
@@ -106,7 +107,8 @@ contract SushiPay is ERC721("Sushi pay", "SP"), BoringBatchable {
     function withdraw(
         uint256 streamId,
         address to,
-        bool toBentoBox
+        bool toBentoBox,
+        bytes memory data
     ) external returns (uint256 sharesWithdrawn) {
         
         require(ownerOf[streamId] == msg.sender, "Only owner");
@@ -120,6 +122,8 @@ contract SushiPay is ERC721("Sushi pay", "SP"), BoringBatchable {
         _withdrawToken(stream.token, to, sharesWithdrawn, toBentoBox);
 
         emit Withdraw(streamId, msg.sender, sharesWithdrawn);
+
+        if (data.length != 0) IRecipient(to).onTokensReceived(data);
     }
 
     function endStream(uint256 streamId, bool toBentoBox) external returns(uint256 paid, uint256 reclaimed) {

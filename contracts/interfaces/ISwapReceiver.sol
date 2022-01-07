@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-pragma solidity 0.8.10;
-
 interface ISwapReceiver {
     function onSwapReceive(
         address tokenIn,
@@ -10,4 +8,8 @@ interface ISwapReceiver {
         uint256 amountOutMin,
         bytes calldata data
     ) external;
+}
+
+interface IRecipient {
+    function onTokensReceived(bytes calldata data) external;
 }
