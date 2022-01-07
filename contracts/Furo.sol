@@ -17,7 +17,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
 
     // custom errors
     error NotSenderOrRecipient();
-    error InvalidStream();
     error InvalidAddressZero();
     error InvalidStartTime();
     error InvalidEndTime();
@@ -32,13 +31,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
             msg.sender != streams[streamId].recipient
         ) {
             revert NotSenderOrRecipient();
-        }
-        _;
-    }
-
-    modifier validStream(uint256 streamId) {
-        if (!(streams[streamId].sender != address(0))) {
-            revert InvalidStream();
         }
         _;
     }
@@ -123,7 +115,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
     )
         external
         override
-        validStream(streamId)
         onlySenderOrRecipient(streamId)
         returns (uint256 recipientBalance, address to)
     {
@@ -166,7 +157,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
     )
         external
         override
-        validStream(streamId)
         returns (uint256 recipientBalance)
     {
         if (!whitelistedReceivers[swapReceiver]) revert InvalidSwapper();
@@ -223,7 +213,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
     function cancelStream(uint256 streamId, bool toBentoBox)
         external
         override
-        validStream(streamId)
         onlySenderOrRecipient(streamId)
         returns (uint256 senderBalance, uint256 recipientBalance)
     {
@@ -260,7 +249,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
         external
         view
         override
-        validStream(streamId)
         returns (Stream memory)
     {
         return streams[streamId];
@@ -270,7 +258,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
         external
         view
         override
-        validStream(streamId)
         returns (uint256 senderBalance, uint256 recipientBalance)
     {
         return _balanceOf(streams[streamId]);

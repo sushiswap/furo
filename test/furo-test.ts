@@ -595,11 +595,6 @@ describe("Stream Balances", function () {
     expect(recipientBalance).to.be.eq(amountToDeposit);
   });
 
-  it("should not get balances from invalid stream id", async function () {
-    await expect(furo.balanceOf(streamId + 1)).to.be.revertedWith(
-      customError("InvalidStream")
-    );
-  });
 });
 
 describe("Stream Withdraw", function () {
@@ -1031,20 +1026,6 @@ describe("Stream Cancel", function () {
     await expect(
       furo.connect(accounts[2]).cancelStream(streamId, true)
     ).to.be.revertedWith(customError("NotSenderOrRecipient"));
-  });
-
-  it("should allow sender to cancel the stream", async function () {
-    await furo.connect(accounts[0]).cancelStream(streamId, true);
-    await expect(snapshotStreamData(furo, streamId)).to.be.revertedWith(
-      customError("InvalidStream")
-    );
-  });
-
-  it("should allow recipient to cancel the stream", async function () {
-    await furo.connect(accounts[1]).cancelStream(streamId, true);
-    await expect(snapshotStreamData(furo, streamId)).to.be.revertedWith(
-      customError("InvalidStream")
-    );
   });
 
   it("should cancel stream after x time and distribute correct amounts - bento", async function () {
