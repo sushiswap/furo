@@ -189,11 +189,11 @@ describe("Stream Creation", function () {
     expect(recipientBalance).to.be.eq(getBigNumber(0));
   });
 
-  it("should allow sender to be updated", async function() {
+  it("should allow sender to be updated", async function () {
     const amount = getBigNumber(10000);
     const amountToShares = await toShare(bento, tokens[0], amount);
     const amountToDeposit = await toAmount(bento, tokens[0], amountToShares);
-    
+
     const oldStreamId = await snapshotStreamId(furo);
 
     await furo.createStream(
@@ -204,20 +204,19 @@ describe("Stream Creation", function () {
       amountToDeposit,
       false
     );
-
 
     await furo.updateSender(oldStreamId, accounts[2].address);
 
     const newStreamData = await snapshotStreamData(furo, oldStreamId);
 
     expect(newStreamData.sender).to.be.eq(accounts[2].address);
-  })
+  });
 
-  it("should not allow sender to be updated", async function() {
+  it("should not allow sender to be updated", async function () {
     const amount = getBigNumber(10000);
     const amountToShares = await toShare(bento, tokens[0], amount);
     const amountToDeposit = await toAmount(bento, tokens[0], amountToShares);
-    
+
     const oldStreamId = await snapshotStreamId(furo);
 
     await furo.createStream(
@@ -229,11 +228,16 @@ describe("Stream Creation", function () {
       false
     );
 
-    await expect(furo.connect(accounts[1]).updateSender(oldStreamId, accounts[2].address)).to.be.revertedWith(customError("NotSender"));
-    await expect(furo.updateSender(oldStreamId, ADDRESS_ZERO)).to.be.revertedWith(customError("InvalidAddressZero"));
-    await expect(furo.updateSender(oldStreamId.add(1), accounts[2].address)).to.be.revertedWith(customError("InvalidStream"));
-
-  })
+    await expect(
+      furo.connect(accounts[1]).updateSender(oldStreamId, accounts[2].address)
+    ).to.be.revertedWith(customError("NotSender"));
+    await expect(
+      furo.updateSender(oldStreamId, ADDRESS_ZERO)
+    ).to.be.revertedWith(customError("InvalidAddressZero"));
+    await expect(
+      furo.updateSender(oldStreamId.add(1), accounts[2].address)
+    ).to.be.revertedWith(customError("InvalidStream"));
+  });
 
   it("should not be able create stream when startTime is less than block.timestamp", async function () {
     const startTime = await latest();
@@ -640,7 +644,6 @@ describe("Stream Balances", function () {
     expect(senderBalance).to.be.eq(0);
     expect(recipientBalance).to.be.eq(amountToDeposit);
   });
-
 });
 
 describe("Stream Withdraw", function () {
