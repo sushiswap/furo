@@ -222,46 +222,6 @@ describe("Stream Creation", function () {
       )
     ).to.be.revertedWith(customError("InvalidEndTime"));
   });
-
-  it("should not stream to invalid recipients", async function () {
-    const amount = getBigNumber(10000);
-    const amountToShares = await toShare(bento, tokens[0], amount);
-
-    const amountToDeposit = await toAmount(bento, tokens[0], amountToShares);
-
-    await expect(
-      furo.createStream(
-        ADDRESS_ZERO,
-        tokens[0].address,
-        startTime,
-        endTime,
-        amountToDeposit,
-        true
-      )
-    ).to.be.revertedWith(customError("InvalidAddressZero"));
-
-    await expect(
-      furo.createStream(
-        furo.address,
-        tokens[0].address,
-        startTime,
-        endTime,
-        amountToDeposit,
-        true
-      )
-    ).to.be.revertedWith(customError("InvalidAddressFuro"));
-
-    await expect(
-      furo.createStream(
-        accounts[0].address,
-        tokens[0].address,
-        startTime,
-        endTime,
-        amountToDeposit,
-        true
-      )
-    ).to.be.revertedWith(customError("InvalidAddressSender"));
-  });
 });
 
 describe("Stream Creation via Native Token", function () {

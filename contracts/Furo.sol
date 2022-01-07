@@ -19,8 +19,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
     error NotSenderOrRecipient();
     error InvalidStream();
     error InvalidAddressZero();
-    error InvalidAddressFuro();
-    error InvalidAddressSender();
     error InvalidStartTime();
     error InvalidEndTime();
     error InvalidWithdrawTooMuch();
@@ -82,9 +80,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
         override
         returns (uint256 streamId, uint256 depositedShares)
     {
-        if (recipient == address(0)) revert InvalidAddressZero();
-        if (recipient == address(this)) revert InvalidAddressFuro();
-        if (recipient == msg.sender) revert InvalidAddressSender();
         if (startTime < block.timestamp) revert InvalidStartTime();
         if (endTime <= startTime) revert InvalidEndTime();
 
