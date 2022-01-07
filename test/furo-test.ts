@@ -262,33 +262,6 @@ describe("Stream Creation", function () {
       )
     ).to.be.revertedWith(customError("InvalidAddressSender"));
   });
-
-  it("should not stream when invalid deposit", async function () {
-    const amount = getBigNumber(10000);
-    const amountToShares = await toShare(bento, tokens[0], amount);
-
-    await expect(
-      furo.createStream(
-        accounts[1].address,
-        tokens[0].address,
-        startTime,
-        endTime,
-        0,
-        true
-      )
-    ).to.be.revertedWith(customError("ZeroDeposit"));
-
-    await expect(
-      furo.createStream(
-        accounts[1].address,
-        tokens[0].address,
-        startTime,
-        endTime,
-        1,
-        true
-      )
-    ).to.be.revertedWith(customError("InvalidDepositSmall"));
-  });
 });
 
 describe("Stream Creation via Native Token", function () {

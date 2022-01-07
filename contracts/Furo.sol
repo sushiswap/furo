@@ -21,11 +21,8 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
     error InvalidAddressZero();
     error InvalidAddressFuro();
     error InvalidAddressSender();
-    error ZeroDeposit();
     error InvalidStartTime();
     error InvalidEndTime();
-    error InvalidDepositSmall();
-    error InvalidDepositMultipleOfTime();
     error InvalidWithdrawTooMuch();
     error InvalidSwapper();
     error NotRecipient();
@@ -83,19 +80,13 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
         external
         payable
         override
-        returns (
-            uint256 streamId,
-            uint256 depositedShares
-        )
+        returns (uint256 streamId, uint256 depositedShares)
     {
         if (recipient == address(0)) revert InvalidAddressZero();
         if (recipient == address(this)) revert InvalidAddressFuro();
         if (recipient == msg.sender) revert InvalidAddressSender();
-        if (amount == 0) revert ZeroDeposit();
         if (startTime < block.timestamp) revert InvalidStartTime();
         if (endTime <= startTime) revert InvalidEndTime();
-
-        uint256 timeDifference = endTime - startTime;
 
         depositedShares = _depositToken(
             token,
@@ -104,8 +95,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
             amount,
             fromBentoBox
         );
-
-        if (depositedShares < timeDifference) revert InvalidDepositSmall();
 
         streamId = streamIds++;
 
@@ -306,7 +295,8 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
         } else {
             uint256 timeDelta = block.timestamp - stream.startTime;
             recipientBalance =
-                (stream.depositedShares * timeDelta / (stream.endTime - stream.startTime)) -
+                ((stream.depositedShares * timeDelta) /
+                    (stream.endTime - stream.startTime)) -
                 uint256(stream.withdrawnShares);
             senderBalance = uint256(stream.depositedShares) - recipientBalance;
         }
