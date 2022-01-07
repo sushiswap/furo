@@ -21,14 +21,7 @@ interface IFuro {
         uint64 endTime,
         uint256 amount, /// @dev in token amount and not in shares
         bool fromBento
-    )
-        external
-        payable
-        returns (
-            uint256 streamId,
-            uint256 depositedShares,
-            uint256 rate
-        );
+    ) external payable returns (uint256 streamId, uint256 depositedShares);
 
     function withdrawFromStream(
         uint256 streamId,
@@ -85,7 +78,10 @@ interface IFuro {
         bool toBentoBox
     );
 
-    event LogWhitelistReceiver(ISwapReceiver indexed swapReceiver, bool approved);
+    event LogWhitelistReceiver(
+        ISwapReceiver indexed swapReceiver,
+        bool approved
+    );
 
     struct Stream {
         address sender;
@@ -93,7 +89,6 @@ interface IFuro {
         address token;
         uint128 depositedShares;
         uint128 withdrawnShares;
-        uint128 rate;
         uint64 startTime;
         uint64 endTime;
     }

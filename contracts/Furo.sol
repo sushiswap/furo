@@ -85,8 +85,7 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
         override
         returns (
             uint256 streamId,
-            uint256 depositedShares,
-            uint256 rate
+            uint256 depositedShares
         )
     {
         if (recipient == address(0)) revert InvalidAddressZero();
@@ -107,10 +106,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
         );
 
         if (depositedShares < timeDifference) revert InvalidDepositSmall();
-        if (depositedShares % timeDifference != 0)
-            revert InvalidDepositMultipleOfTime();
-
-        rate = depositedShares / timeDifference;
 
         streamId = streamIds++;
 
@@ -119,7 +114,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
             recipient: recipient,
             token: token,
             depositedShares: uint128(depositedShares),
-            rate: uint128(rate),
             withdrawnShares: 0,
             startTime: startTime,
             endTime: endTime
@@ -307,15 +301,12 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
             senderBalance = stream.depositedShares;
             recipientBalance = 0;
         } else if (stream.endTime <= block.timestamp) {
-            uint256 timeDelta = stream.endTime - stream.startTime;
-            recipientBalance =
-                (stream.rate * timeDelta) -
-                stream.withdrawnShares;
+            recipientBalance = stream.depositedShares - stream.withdrawnShares;
             senderBalance = 0;
         } else {
             uint256 timeDelta = block.timestamp - stream.startTime;
             recipientBalance =
-                (stream.rate * timeDelta) -
+                (stream.depositedShares * timeDelta / (stream.endTime - stream.startTime)) -
                 uint256(stream.withdrawnShares);
             senderBalance = uint256(stream.depositedShares) - recipientBalance;
         }
