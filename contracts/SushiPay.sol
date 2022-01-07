@@ -48,10 +48,10 @@ contract SushiPay is ERC721("Sushi pay", "SP"), BoringBatchable {
     );
 
     struct Stream {
-        address controller; // todo check if its worth it to pack address + timestamp into one bytes32 slot
+        address controller;
         address token;
-        uint128 startTime;
-        uint128 endTime;
+        uint48 startTime;
+        uint48 endTime;
         uint128 totalAmount;
         uint128 claimedAmount;
     }
@@ -77,8 +77,8 @@ contract SushiPay is ERC721("Sushi pay", "SP"), BoringBatchable {
         address recipient,
         address token,
         uint256 amount,
-        uint128 startTime,
-        uint128 endTime,
+        uint48 startTime,
+        uint48 endTime,
         bool fromBentoBox
     ) public payable returns (uint256 streamId, uint256 depositedShares) {
 
