@@ -17,12 +17,14 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
 
     // custom errors
     error NotSenderOrRecipient();
+    error InvalidStream();
     error InvalidAddressZero();
     error InvalidStartTime();
     error InvalidEndTime();
     error InvalidWithdrawTooMuch();
     error InvalidSwapper();
     error NotRecipient();
+    error NotSender();
     error ReceivedTooLess();
 
     modifier onlySenderOrRecipient(uint256 streamId) {
@@ -154,11 +156,7 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
         ISwapReceiver swapReceiver,
         bytes calldata data,
         bool toBentoBox
-    )
-        external
-        override
-        returns (uint256 recipientBalance)
-    {
+    ) external override returns (uint256 recipientBalance) {
         if (!whitelistedReceivers[swapReceiver]) revert InvalidSwapper();
         Stream storage stream = streams[streamId];
         if (msg.sender != stream.recipient) revert NotRecipient();
@@ -282,6 +280,14 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
                 uint256(stream.withdrawnShares);
             senderBalance = uint256(stream.depositedShares) - recipientBalance;
         }
+    }
+
+    function updateSender(uint256 streamId, address sender) external override {
+        Stream storage stream = streams[streamId];
+        if (sender == address(0)) revert InvalidAddressZero();
+        if (stream.sender == address(0)) revert InvalidStream();
+        if (msg.sender != stream.sender) revert NotSender();
+        stream.sender = sender;
     }
 
     function whitelistReceiver(ISwapReceiver receiver, bool approved)

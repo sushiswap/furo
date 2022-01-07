@@ -44,6 +44,8 @@ interface IFuro {
         external
         returns (uint256 senderBalance, uint256 recipientBalance);
 
+    function updateSender(uint256 streamId, address sender) external;
+
     function balanceOf(uint256 streamId)
         external
         view
