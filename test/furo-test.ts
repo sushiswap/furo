@@ -189,6 +189,56 @@ describe("Stream Creation", function () {
     expect(recipientBalance).to.be.eq(getBigNumber(0));
   });
 
+  it("should allow sender to be updated", async function () {
+    const amount = getBigNumber(10000);
+    const amountToShares = await toShare(bento, tokens[0], amount);
+    const amountToDeposit = await toAmount(bento, tokens[0], amountToShares);
+
+    const oldStreamId = await snapshotStreamId(furo);
+
+    await furo.createStream(
+      accounts[1].address,
+      tokens[0].address,
+      startTime,
+      endTime,
+      amountToDeposit,
+      false
+    );
+
+    await furo.updateSender(oldStreamId, accounts[2].address);
+
+    const newStreamData = await snapshotStreamData(furo, oldStreamId);
+
+    expect(newStreamData.sender).to.be.eq(accounts[2].address);
+  });
+
+  it("should not allow sender to be updated", async function () {
+    const amount = getBigNumber(10000);
+    const amountToShares = await toShare(bento, tokens[0], amount);
+    const amountToDeposit = await toAmount(bento, tokens[0], amountToShares);
+
+    const oldStreamId = await snapshotStreamId(furo);
+
+    await furo.createStream(
+      accounts[1].address,
+      tokens[0].address,
+      startTime,
+      endTime,
+      amountToDeposit,
+      false
+    );
+
+    await expect(
+      furo.connect(accounts[1]).updateSender(oldStreamId, accounts[2].address)
+    ).to.be.revertedWith(customError("NotSender"));
+    await expect(
+      furo.updateSender(oldStreamId, ADDRESS_ZERO)
+    ).to.be.revertedWith(customError("InvalidAddressZero"));
+    await expect(
+      furo.updateSender(oldStreamId.add(1), accounts[2].address)
+    ).to.be.revertedWith(customError("InvalidStream"));
+  });
+
   it("should not be able create stream when startTime is less than block.timestamp", async function () {
     const startTime = await latest();
     const endTime = startTime.add(BigNumber.from(3600));
@@ -221,73 +271,6 @@ describe("Stream Creation", function () {
         true
       )
     ).to.be.revertedWith(customError("InvalidEndTime"));
-  });
-
-  it("should not stream to invalid recipients", async function () {
-    const amount = getBigNumber(10000);
-    const amountToShares = await toShare(bento, tokens[0], amount);
-
-    const amountToDeposit = await toAmount(bento, tokens[0], amountToShares);
-
-    await expect(
-      furo.createStream(
-        ADDRESS_ZERO,
-        tokens[0].address,
-        startTime,
-        endTime,
-        amountToDeposit,
-        true
-      )
-    ).to.be.revertedWith(customError("InvalidAddressZero"));
-
-    await expect(
-      furo.createStream(
-        furo.address,
-        tokens[0].address,
-        startTime,
-        endTime,
-        amountToDeposit,
-        true
-      )
-    ).to.be.revertedWith(customError("InvalidAddressFuro"));
-
-    await expect(
-      furo.createStream(
-        accounts[0].address,
-        tokens[0].address,
-        startTime,
-        endTime,
-        amountToDeposit,
-        true
-      )
-    ).to.be.revertedWith(customError("InvalidAddressSender"));
-  });
-
-  it("should not stream when invalid deposit", async function () {
-    const amount = getBigNumber(10000);
-    const amountToShares = await toShare(bento, tokens[0], amount);
-
-    await expect(
-      furo.createStream(
-        accounts[1].address,
-        tokens[0].address,
-        startTime,
-        endTime,
-        0,
-        true
-      )
-    ).to.be.revertedWith(customError("ZeroDeposit"));
-
-    await expect(
-      furo.createStream(
-        accounts[1].address,
-        tokens[0].address,
-        startTime,
-        endTime,
-        1,
-        true
-      )
-    ).to.be.revertedWith(customError("InvalidDepositSmall"));
   });
 });
 
@@ -660,12 +643,6 @@ describe("Stream Balances", function () {
     );
     expect(senderBalance).to.be.eq(0);
     expect(recipientBalance).to.be.eq(amountToDeposit);
-  });
-
-  it("should not get balances from invalid stream id", async function () {
-    await expect(furo.balanceOf(streamId + 1)).to.be.revertedWith(
-      customError("InvalidStream")
-    );
   });
 });
 
@@ -1098,20 +1075,6 @@ describe("Stream Cancel", function () {
     await expect(
       furo.connect(accounts[2]).cancelStream(streamId, true)
     ).to.be.revertedWith(customError("NotSenderOrRecipient"));
-  });
-
-  it("should allow sender to cancel the stream", async function () {
-    await furo.connect(accounts[0]).cancelStream(streamId, true);
-    await expect(snapshotStreamData(furo, streamId)).to.be.revertedWith(
-      customError("InvalidStream")
-    );
-  });
-
-  it("should allow recipient to cancel the stream", async function () {
-    await furo.connect(accounts[1]).cancelStream(streamId, true);
-    await expect(snapshotStreamData(furo, streamId)).to.be.revertedWith(
-      customError("InvalidStream")
-    );
   });
 
   it("should cancel stream after x time and distribute correct amounts - bento", async function () {

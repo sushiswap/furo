@@ -19,16 +19,12 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
     error NotSenderOrRecipient();
     error InvalidStream();
     error InvalidAddressZero();
-    error InvalidAddressFuro();
-    error InvalidAddressSender();
-    error ZeroDeposit();
     error InvalidStartTime();
     error InvalidEndTime();
-    error InvalidDepositSmall();
-    error InvalidDepositMultipleOfTime();
     error InvalidWithdrawTooMuch();
     error InvalidSwapper();
     error NotRecipient();
+    error NotSender();
     error ReceivedTooLess();
 
     modifier onlySenderOrRecipient(uint256 streamId) {
@@ -37,13 +33,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
             msg.sender != streams[streamId].recipient
         ) {
             revert NotSenderOrRecipient();
-        }
-        _;
-    }
-
-    modifier validStream(uint256 streamId) {
-        if (!(streams[streamId].sender != address(0))) {
-            revert InvalidStream();
         }
         _;
     }
@@ -83,19 +72,10 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
         external
         payable
         override
-        returns (
-            uint256 streamId,
-            uint256 depositedShares
-        )
+        returns (uint256 streamId, uint256 depositedShares)
     {
-        if (recipient == address(0)) revert InvalidAddressZero();
-        if (recipient == address(this)) revert InvalidAddressFuro();
-        if (recipient == msg.sender) revert InvalidAddressSender();
-        if (amount == 0) revert ZeroDeposit();
         if (startTime < block.timestamp) revert InvalidStartTime();
         if (endTime <= startTime) revert InvalidEndTime();
-
-        uint256 timeDifference = endTime - startTime;
 
         depositedShares = _depositToken(
             token,
@@ -104,8 +84,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
             amount,
             fromBentoBox
         );
-
-        if (depositedShares < timeDifference) revert InvalidDepositSmall();
 
         streamId = streamIds++;
 
@@ -139,7 +117,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
     )
         external
         override
-        validStream(streamId)
         onlySenderOrRecipient(streamId)
         returns (uint256 recipientBalance, address to)
     {
@@ -179,12 +156,7 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
         ISwapReceiver swapReceiver,
         bytes calldata data,
         bool toBentoBox
-    )
-        external
-        override
-        validStream(streamId)
-        returns (uint256 recipientBalance)
-    {
+    ) external override returns (uint256 recipientBalance) {
         if (!whitelistedReceivers[swapReceiver]) revert InvalidSwapper();
         Stream storage stream = streams[streamId];
         if (msg.sender != stream.recipient) revert NotRecipient();
@@ -239,7 +211,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
     function cancelStream(uint256 streamId, bool toBentoBox)
         external
         override
-        validStream(streamId)
         onlySenderOrRecipient(streamId)
         returns (uint256 senderBalance, uint256 recipientBalance)
     {
@@ -276,7 +247,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
         external
         view
         override
-        validStream(streamId)
         returns (Stream memory)
     {
         return streams[streamId];
@@ -286,7 +256,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
         external
         view
         override
-        validStream(streamId)
         returns (uint256 senderBalance, uint256 recipientBalance)
     {
         return _balanceOf(streams[streamId]);
@@ -306,10 +275,19 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
         } else {
             uint256 timeDelta = block.timestamp - stream.startTime;
             recipientBalance =
-                (stream.depositedShares * timeDelta / (stream.endTime - stream.startTime)) -
+                ((stream.depositedShares * timeDelta) /
+                    (stream.endTime - stream.startTime)) -
                 uint256(stream.withdrawnShares);
             senderBalance = uint256(stream.depositedShares) - recipientBalance;
         }
+    }
+
+    function updateSender(uint256 streamId, address sender) external override {
+        Stream storage stream = streams[streamId];
+        if (sender == address(0)) revert InvalidAddressZero();
+        if (stream.sender == address(0)) revert InvalidStream();
+        if (msg.sender != stream.sender) revert NotSender();
+        stream.sender = sender;
     }
 
     function whitelistReceiver(ISwapReceiver receiver, bool approved)
