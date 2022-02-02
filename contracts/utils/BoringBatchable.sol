@@ -34,7 +34,8 @@ contract BaseBoringBatchable {
     /// @param calls An array of inputs for each call.
     /// @param revertOnFail If True then reverts after a failed call and stops doing further calls.
     // F1: External is ok here because this is the batch function, adding it to a batch makes no sense
-    // F2: Calls in the batch may be payable, delegatecall operates in the same context, so each call in the batch has access to msg.value
+    // F2: Calls in the batch may be payable, delegatecall operates in the same context, 
+    // so each call in the batch has access to msg.value
     // C3: The length of the loop is fully under user control, so can't be exploited
     // C7: Delegatecall is only used on the same contract, so it's safe
     function batch(bytes[] calldata calls, bool revertOnFail) external payable {

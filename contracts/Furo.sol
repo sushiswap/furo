@@ -17,8 +17,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
 
     // custom errors
     error NotSenderOrRecipient();
-    error InvalidStream();
-    error InvalidAddressZero();
     error InvalidStartTime();
     error InvalidEndTime();
     error InvalidWithdrawTooMuch();
@@ -284,8 +282,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
 
     function updateSender(uint256 streamId, address sender) external override {
         Stream storage stream = streams[streamId];
-        if (sender == address(0)) revert InvalidAddressZero();
-        if (stream.sender == address(0)) revert InvalidStream();
         if (msg.sender != stream.sender) revert NotSender();
         stream.sender = sender;
     }
