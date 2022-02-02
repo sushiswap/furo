@@ -3,7 +3,7 @@
   "mochaExplorer.fullTrace": true,
   "mochaExplorer.exit": true,
   "solidity.enableLocalNodeCompiler": false,
-  "solidity.compileUsingRemoteVersion": "v0.6.12+commit.27d51765",
+  "solidity.compileUsingRemoteVersion": "v0.8.10+commit.fc410830",
   "solidity.compilerOptimization": 200,
   "solidity.compileUsingLocalVersion": "",
   "solidity.linter": "solhint",
