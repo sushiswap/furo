@@ -231,12 +231,6 @@ describe("Stream Creation", function () {
     await expect(
       furo.connect(accounts[1]).updateSender(oldStreamId, accounts[2].address)
     ).to.be.revertedWith(customError("NotSender"));
-    await expect(
-      furo.updateSender(oldStreamId, ADDRESS_ZERO)
-    ).to.be.revertedWith(customError("InvalidAddressZero"));
-    await expect(
-      furo.updateSender(oldStreamId.add(1), accounts[2].address)
-    ).to.be.revertedWith(customError("InvalidStream"));
   });
 
   it("should not be able create stream when startTime is less than block.timestamp", async function () {
