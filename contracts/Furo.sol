@@ -13,17 +13,14 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
     uint256 public streamIds;
 
     mapping(uint256 => Stream) public streams;
-    mapping(ISwapReceiver => bool) public whitelistedReceivers;
 
     // custom errors
     error NotSenderOrRecipient();
     error InvalidStartTime();
     error InvalidEndTime();
     error InvalidWithdrawTooMuch();
-    error InvalidSwapper();
     error NotRecipient();
     error NotSender();
-    error ReceivedTooLess();
 
     modifier onlySenderOrRecipient(uint256 streamId) {
         if (
@@ -111,7 +108,8 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
         uint256 streamId,
         uint256 sharesToWithdraw,
         address withdrawTo,
-        bool toBentoBox
+        bool toBentoBox,
+        bytes memory taskData
     )
         external
         override
@@ -137,71 +135,13 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
             toBentoBox
         );
 
+        if (taskData.length != 0) ITasker(to).onTaskReceived(taskData);
+
         emit LogWithdrawFromStream(
             streamId,
             sharesToWithdraw,
             withdrawTo,
             stream.token,
-            toBentoBox
-        );
-    }
-
-    function withdrawSwap(
-        uint256 streamId,
-        uint256 sharesToWithdraw,
-        address toToken,
-        uint256 amountOutMin,
-        ISwapReceiver swapReceiver,
-        bytes calldata data,
-        bool toBentoBox
-    ) external override returns (uint256 recipientBalance) {
-        if (!whitelistedReceivers[swapReceiver]) revert InvalidSwapper();
-        Stream storage stream = streams[streamId];
-        if (msg.sender != stream.recipient) revert NotRecipient();
-        (, recipientBalance) = _balanceOf(stream);
-        require(
-            recipientBalance >= sharesToWithdraw,
-            "Furo: withdraw too much"
-        );
-        stream.withdrawnShares += uint128(sharesToWithdraw);
-        uint256 toTokenBalanceBefore = bentoBox.balanceOf(
-            toToken,
-            address(this)
-        );
-        _transferToken(
-            stream.token,
-            address(this),
-            address(swapReceiver),
-            sharesToWithdraw,
-            true
-        );
-        swapReceiver.onSwapReceive(
-            stream.token,
-            toToken,
-            sharesToWithdraw,
-            amountOutMin,
-            data
-        );
-        uint256 toTokenBalanceAfter = bentoBox.balanceOf(
-            toToken,
-            address(this)
-        );
-        if (toTokenBalanceAfter < toTokenBalanceBefore + amountOutMin)
-            revert ReceivedTooLess();
-
-        _transferToken(
-            toToken,
-            address(this),
-            stream.recipient,
-            toTokenBalanceAfter - toTokenBalanceBefore,
-            toBentoBox
-        );
-
-        emit LogWithdrawFromStream(
-            streamId,
-            sharesToWithdraw,
-            stream.recipient,
-            toToken,
             toBentoBox
         );
     }
@@ -284,14 +224,6 @@ contract Furo is IFuro, BoringOwnable, BoringBatchable {
         Stream storage stream = streams[streamId];
         if (msg.sender != stream.sender) revert NotSender();
         stream.sender = sender;
-    }
-
-    function whitelistReceiver(ISwapReceiver receiver, bool approved)
-        external
-        onlyOwner
-    {
-        whitelistedReceivers[receiver] = approved;
-        emit LogWhitelistReceiver(receiver, approved);
     }
 
     function _depositToken(
