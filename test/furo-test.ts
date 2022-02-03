@@ -648,6 +648,7 @@ describe("Stream Withdraw", function () {
   let bento;
   let furo;
   let tokens = [];
+  let tasker;
 
   let startTime;
   let endTime;
@@ -659,6 +660,7 @@ describe("Stream Withdraw", function () {
     const ERC20 = await ethers.getContractFactory("ERC20Mock");
     const BentoBoxV1 = await ethers.getContractFactory("BentoBoxV1");
     const Furo = await ethers.getContractFactory("Furo");
+    const Tasker =await ethers.getContractFactory("TaskReceiverMock");
 
     let promises = [];
     for (let i = 0; i < 1; i++) {
@@ -670,6 +672,7 @@ describe("Stream Withdraw", function () {
     tokens = await Promise.all(promises);
     bento = await BentoBoxV1.deploy(tokens[0].address);
     furo = await Furo.deploy(bento.address, tokens[0].address);
+    tasker = await Tasker.deploy();
 
     await bento.whitelistMasterContract(furo.address, true);
 
@@ -744,7 +747,7 @@ describe("Stream Withdraw", function () {
       accounts[1].address
     );
 
-    await furo.withdrawFromStream(streamId, 0, ADDRESS_ZERO, true);
+    await furo.withdrawFromStream(streamId, 0, ADDRESS_ZERO, true, "0x");
 
     const recipientNewBentoBalance = await getBentoBalance(
       bento,
@@ -759,16 +762,22 @@ describe("Stream Withdraw", function () {
     await expect(
       furo
         .connect(accounts[2])
-        .withdrawFromStream(streamId, 0, ADDRESS_ZERO, true)
+        .withdrawFromStream(streamId, 0, ADDRESS_ZERO, true, "0x")
     ).to.be.revertedWith(customError("NotSenderOrRecipient"));
 
     await furo
       .connect(accounts[0])
-      .withdrawFromStream(streamId, 0, ADDRESS_ZERO, true);
+      .withdrawFromStream(streamId, 0, ADDRESS_ZERO, true, "0x");
     await furo
       .connect(accounts[1])
-      .withdrawFromStream(streamId, 0, ADDRESS_ZERO, true);
+      .withdrawFromStream(streamId, 0, ADDRESS_ZERO, true, "0x");
   });
+
+  it("should allow to run task", async function() {
+    await furo
+      .connect(accounts[1])
+      .withdrawFromStream(streamId, 0, tasker.address, true, "0x00");
+  })
 
   it("should allow to withdraw after x time from start of stream - bento", async function () {
     const streamData = await snapshotStreamData(furo, streamId);
@@ -791,7 +800,8 @@ describe("Stream Withdraw", function () {
       streamId,
       amountToWithdraw,
       ADDRESS_ZERO,
-      true
+      true,
+      "0x"
     );
 
     const recipientNewBentoBalance = await getBentoBalance(
@@ -827,7 +837,8 @@ describe("Stream Withdraw", function () {
       streamId,
       amountToWithdraw,
       ADDRESS_ZERO,
-      false
+      false,
+      "0x"
     );
 
     const recipientNewBalance = await tokens[0].balanceOf(streamData.recipient);
@@ -851,7 +862,8 @@ describe("Stream Withdraw", function () {
       streamId,
       streamData.depositedShares,
       ADDRESS_ZERO,
-      true
+      true,
+      "0x"
     );
     const { senderBalance, recipientBalance } = await getStreamBalance(
       furo,
@@ -875,10 +887,11 @@ describe("Stream Withdraw", function () {
       streamId,
       streamData.depositedShares,
       ADDRESS_ZERO,
-      true
+      true,
+      "0x"
     );
     await expect(
-      furo.withdrawFromStream(streamId, 1, ADDRESS_ZERO, true)
+      furo.withdrawFromStream(streamId, 1, ADDRESS_ZERO, true, "0x")
     ).to.be.revertedWith(customError("InvalidWithdrawTooMuch"));
 
     const { senderBalance, recipientBalance } = await getStreamBalance(
@@ -904,7 +917,8 @@ describe("Stream Withdraw", function () {
         streamId,
         streamData.depositedShares,
         ADDRESS_ZERO,
-        true
+        true,
+        "0x"
       )
     ).to.be.revertedWith(customError("InvalidWithdrawTooMuch"));
   });
@@ -922,7 +936,8 @@ describe("Stream Withdraw", function () {
         streamId,
         streamData.depositedShares,
         accounts[2].address,
-        true
+        true,
+        "0x"
       );
 
     const { senderBalance, recipientBalance } = await getStreamBalance(
@@ -951,7 +966,8 @@ describe("Stream Withdraw", function () {
         streamId,
         streamData.depositedShares,
         accounts[2].address,
-        true
+        true,
+        "0x"
       );
 
     const { senderBalance, recipientBalance } = await getStreamBalance(
@@ -1329,340 +1345,6 @@ describe("Stream Creation - Batchable", function () {
   });
 });
 
-describe("Stream Swap Withdraw", function () {
-  let accounts: Signer[];
-
-  let snapshotId;
-
-  let bento;
-  let furo;
-  let factory;
-  let swapReceiver;
-  let swapReceiverMalicious;
-  let amountToDeposit;
-  let streamId;
-  let pair;
-  let tokens = [];
-
-  let startTime;
-  let endTime;
-
-  before(async function () {
-    accounts = await ethers.getSigners();
-    const ERC20 = await ethers.getContractFactory("ERC20Mock");
-    const BentoBoxV1 = await ethers.getContractFactory("BentoBoxV1");
-    const Furo = await ethers.getContractFactory("Furo");
-    const Factory = await ethers.getContractFactory("SushiSwapFactoryMock");
-    const SushiSwapPairMock = await ethers.getContractFactory(
-      "SushiSwapPairMock"
-    );
-    const SwapReceiver = await ethers.getContractFactory("SwapReceiver");
-    const SwapReceiverMalicious = await ethers.getContractFactory(
-      "SwapReceiverMalicious"
-    );
-
-    let promises = [];
-    for (let i = 0; i < 2; i++) {
-      promises.push(
-        ERC20.deploy("Token" + i, "TOK" + i, getBigNumber(1000000))
-      );
-    }
-
-    tokens = await Promise.all(promises);
-    bento = await BentoBoxV1.deploy(tokens[0].address);
-    furo = await Furo.deploy(bento.address, tokens[0].address);
-    factory = await Factory.deploy();
-    const pairCodeHash = await factory.pairCodeHash();
-
-    swapReceiver = await SwapReceiver.deploy(
-      factory.address,
-      bento.address,
-      pairCodeHash
-    );
-
-    swapReceiverMalicious = await SwapReceiverMalicious.deploy(
-      factory.address,
-      bento.address,
-      pairCodeHash
-    );
-
-    const createPairTx = await factory.createPair(
-      tokens[0].address,
-      tokens[1].address
-    );
-
-    const _pair = (await createPairTx.wait()).events[0].args.pair;
-
-    pair = await SushiSwapPairMock.attach(_pair);
-
-    await tokens[0].transfer(pair.address, getBigNumber(400000));
-    await tokens[1].transfer(pair.address, getBigNumber(400000));
-
-    await pair.mint(accounts[0].address);
-
-    await bento.whitelistMasterContract(furo.address, true);
-
-    promises = [];
-    for (let i = 0; i < tokens.length; i++) {
-      promises.push(
-        tokens[i].approve(bento.address, getBigNumber(1000000)).then(() => {
-          bento.deposit(
-            tokens[i].address,
-            accounts[0].address,
-            accounts[0].address,
-            getBigNumber(500000),
-            0
-          );
-        })
-      );
-    }
-
-    await Promise.all(promises);
-    await bento.setMasterContractApproval(
-      accounts[0].address,
-      furo.address,
-      true,
-      "0",
-      "0x0000000000000000000000000000000000000000000000000000000000000000",
-      "0x0000000000000000000000000000000000000000000000000000000000000000"
-    );
-    await bento
-      .connect(accounts[1])
-      .setMasterContractApproval(
-        accounts[1].address,
-        furo.address,
-        true,
-        "0",
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
-        "0x0000000000000000000000000000000000000000000000000000000000000000"
-      );
-
-    startTime = BigNumber.from(Math.floor(new Date().getTime() / 1000)).add(
-      BigNumber.from(300)
-    );
-    endTime = startTime.add(BigNumber.from(3600));
-
-    let timeDifference = endTime - startTime;
-    const amount = getBigNumber(10000);
-    const amountToShares = await toShare(bento, tokens[0], amount);
-
-    const modValue = amountToShares.mod(timeDifference);
-    amountToDeposit = await toAmount(
-      bento,
-      tokens[0],
-      amountToShares.sub(modValue)
-    );
-
-    streamId = (await snapshotStreamId(furo)).toString();
-
-    await furo.createStream(
-      accounts[1].address,
-      tokens[0].address,
-      startTime,
-      endTime,
-      amountToDeposit,
-      true
-    );
-  });
-
-  beforeEach(async function () {
-    snapshotId = await snapshot();
-  });
-
-  afterEach(async function () {
-    await restore(snapshotId);
-  });
-
-  it("should only allow whitelisted receivers", async function () {
-    const timeNow = await latest();
-    const timeDifference = endTime - timeNow;
-    await increase(duration.seconds(timeDifference));
-    const stream = await snapshotStreamData(furo, streamId);
-    const data = ethers.utils.defaultAbiCoder.encode(
-      ["address[]"],
-      [[tokens[0].address, tokens[1].address]]
-    );
-    await expect(
-      furo
-        .connect(accounts[1])
-        .withdrawSwap(
-          streamId,
-          stream.depositedShares,
-          tokens[1].address,
-          BigNumber.from("9727541039588262553138"),
-          swapReceiver.address,
-          data,
-          false
-        )
-    ).to.be.revertedWith(customError("InvalidSwapper"));
-  });
-
-  it("should only be called by the stream recipient", async function () {
-    await furo.whitelistReceiver(swapReceiver.address, true);
-    const timeNow = await latest();
-    const timeDifference = endTime - timeNow;
-    await increase(duration.seconds(timeDifference));
-    const stream = await snapshotStreamData(furo, streamId);
-    const data = ethers.utils.defaultAbiCoder.encode(
-      ["address[]"],
-      [[tokens[0].address, tokens[1].address]]
-    );
-    await expect(
-      furo
-        .connect(accounts[0])
-        .withdrawSwap(
-          streamId,
-          stream.depositedShares,
-          tokens[1].address,
-          BigNumber.from("9727541039588262553138"),
-          swapReceiver.address,
-          data,
-          false
-        )
-    ).to.be.revertedWith(customError("NotRecipient"));
-  });
-
-  it("should not allow receiver to provide less token than minimum", async function () {
-    await furo.whitelistReceiver(swapReceiverMalicious.address, true);
-    const timeNow = await latest();
-    const timeDifference = endTime - timeNow;
-    await increase(duration.seconds(timeDifference));
-    const stream = await snapshotStreamData(furo, streamId);
-    const data = ethers.utils.defaultAbiCoder.encode(
-      ["address[]"],
-      [[tokens[0].address, tokens[1].address]]
-    );
-    await expect(
-      furo
-        .connect(accounts[1])
-        .withdrawSwap(
-          streamId,
-          stream.depositedShares,
-          tokens[1].address,
-          BigNumber.from("9727541039588262553139"),
-          swapReceiverMalicious.address,
-          data,
-          false
-        )
-    ).to.be.revertedWith(customError("ReceivedTooLess"));
-  });
-
-  it("should not allow to withdraw more than available", async function () {
-    await furo.whitelistReceiver(swapReceiver.address, true);
-    const timeNow = await latest();
-    const timeDifference = endTime - timeNow;
-    await increase(duration.seconds(timeDifference));
-    const stream = await snapshotStreamData(furo, streamId);
-    const data = ethers.utils.defaultAbiCoder.encode(
-      ["address[]"],
-      [[tokens[0].address, tokens[1].address]]
-    );
-    await expect(
-      furo
-        .connect(accounts[1])
-        .withdrawSwap(
-          streamId,
-          stream.depositedShares.add(1),
-          tokens[1].address,
-          BigNumber.from("9727541039588262553138"),
-          swapReceiver.address,
-          data,
-          false
-        )
-    ).to.be.revertedWith("Furo: withdraw too much");
-  });
-
-  it("should be able to swap withdraw - bento", async function () {
-    await furo.whitelistReceiver(swapReceiver.address, true);
-    const timeNow = await latest();
-    const timeDifference = endTime - timeNow;
-    await increase(duration.seconds(timeDifference));
-    const stream = await snapshotStreamData(furo, streamId);
-    const amountOutMin = BigNumber.from("9727541039588262553139");
-    const data = ethers.utils.defaultAbiCoder.encode(
-      ["address[]"],
-      [[tokens[0].address, tokens[1].address]]
-    );
-
-    const token1BentoBalanceBefore = await getBentoBalance(
-      bento,
-      tokens[1],
-      accounts[1].address
-    );
-
-    await furo
-      .connect(accounts[1])
-      .withdrawSwap(
-        streamId,
-        stream.depositedShares,
-        tokens[1].address,
-        amountOutMin,
-        swapReceiver.address,
-        data,
-        true
-      );
-
-    const token1BentoBalanceAfter = await getBentoBalance(
-      bento,
-      tokens[1],
-      accounts[1].address
-    );
-
-    const { senderBalance, recipientBalance } = await getStreamBalance(
-      furo,
-      streamId
-    );
-
-    expect(token1BentoBalanceAfter).to.be.eq(
-      token1BentoBalanceBefore.add(amountOutMin)
-    );
-    const streamDataNew = await snapshotStreamData(furo, streamId);
-    expect(stream.depositedShares).to.be.eq(streamDataNew.withdrawnShares);
-    expect(senderBalance).to.be.eq(0);
-    expect(recipientBalance).to.be.eq(0);
-  });
-
-  it("should be able to swap withdraw - native", async function () {
-    await furo.whitelistReceiver(swapReceiver.address, true);
-    const timeNow = await latest();
-    const timeDifference = endTime - timeNow;
-    await increase(duration.seconds(timeDifference));
-    const stream = await snapshotStreamData(furo, streamId);
-    const amountOutMin = BigNumber.from("9727541039588262553139");
-    const data = ethers.utils.defaultAbiCoder.encode(
-      ["address[]"],
-      [[tokens[0].address, tokens[1].address]]
-    );
-
-    const token1BalanceBefore = await tokens[1].balanceOf(accounts[1].address);
-
-    await furo
-      .connect(accounts[1])
-      .withdrawSwap(
-        streamId,
-        stream.depositedShares,
-        tokens[1].address,
-        amountOutMin,
-        swapReceiver.address,
-        data,
-        false
-      );
-
-    const token1BalanceAfter = await tokens[1].balanceOf(accounts[1].address);
-
-    const { senderBalance, recipientBalance } = await getStreamBalance(
-      furo,
-      streamId
-    );
-
-    expect(token1BalanceAfter).to.be.eq(token1BalanceBefore.add(amountOutMin));
-    const streamDataNew = await snapshotStreamData(furo, streamId);
-    expect(stream.depositedShares).to.be.eq(streamDataNew.withdrawnShares);
-    expect(senderBalance).to.be.eq(0);
-    expect(recipientBalance).to.be.eq(0);
-  });
-});
-
 describe("Stream Admin Functionality", function () {
   let accounts: Signer[];
 
@@ -1743,17 +1425,6 @@ describe("Stream Admin Functionality", function () {
     await restore(snapshotId);
   });
 
-  it("should not allow to whitelist receiver when not owner", async function () {
-    await expect(
-      furo.connect(accounts[1]).whitelistReceiver(accounts[1].address, true)
-    ).to.be.revertedWith("Ownable: caller is not the owner");
-  });
-  it("should allow to whitelist receiver when owner", async function () {
-    await furo
-      .connect(accounts[0])
-      .whitelistReceiver(accounts[0].address, true);
-    expect(await furo.whitelistedReceivers(accounts[0].address)).to.be.eq(true);
-  });
   it("should not allow to set new owner when not owner", async function () {
     await expect(
       furo

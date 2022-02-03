@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.10;
 
-import "./ISwapReceiver.sol";
+import "./ITasker.sol";
 import "./IBentoBoxMinimal.sol";
 
 interface IFuro {
@@ -27,18 +27,9 @@ interface IFuro {
         uint256 streamId,
         uint256 sharesToWithdraw,
         address withdrawTo,
-        bool toBentoBox
+        bool toBentoBox,
+        bytes memory taskData
     ) external returns (uint256 recipientBalance, address to);
-
-    function withdrawSwap(
-        uint256 streamId,
-        uint256 sharesToWithdraw,
-        address toToken,
-        uint256 amountOutMin,
-        ISwapReceiver swapReceiver,
-        bytes calldata data,
-        bool toBentoBox
-    ) external returns (uint256 recipientBalance);
 
     function cancelStream(uint256 streamId, bool toBentoBox)
         external
@@ -78,11 +69,6 @@ interface IFuro {
         uint256 indexed recipientBalance,
         address token,
         bool toBentoBox
-    );
-
-    event LogWhitelistReceiver(
-        ISwapReceiver indexed swapReceiver,
-        bool approved
     );
 
     struct Stream {
