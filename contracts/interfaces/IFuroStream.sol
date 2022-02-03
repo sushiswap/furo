@@ -5,7 +5,7 @@ pragma solidity 0.8.10;
 import "./ITasker.sol";
 import "./IBentoBoxMinimal.sol";
 
-interface IFuro {
+interface IFuroStream {
     function setBentoBoxApproval(
         address user,
         bool approved,

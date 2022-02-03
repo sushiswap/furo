@@ -2,11 +2,11 @@
 
 pragma solidity 0.8.10;
 
-import "./interfaces/IFuro.sol";
-import "./utils/BoringBatchable.sol";
-import "./utils/BoringOwnable.sol";
+import "../interfaces/IFuroStream.sol";
+import "../utils/BoringBatchable.sol";
+import "../utils/BoringOwnable.sol";
 
-contract Furo is IFuro, BoringOwnable, BoringBatchable {
+contract FuroStream is IFuroStream, BoringOwnable, BoringBatchable {
     IBentoBoxMinimal public immutable bentoBox;
     address public immutable wETH;
 
