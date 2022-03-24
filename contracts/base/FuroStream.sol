@@ -3,10 +3,13 @@
 pragma solidity 0.8.10;
 
 import "../interfaces/IFuroStream.sol";
-import "../utils/BoringBatchable.sol";
-import "../utils/BoringOwnable.sol";
 
-contract FuroStream is IFuroStream, BoringOwnable, BoringBatchable {
+contract FuroStream is
+    IFuroStream,
+    ERC721("Furo Stream", "FURO"),
+    BoringOwnable,
+    BoringBatchable
+{
     IBentoBoxMinimal public immutable bentoBox;
     address public immutable wETH;
 
@@ -22,20 +25,10 @@ contract FuroStream is IFuroStream, BoringOwnable, BoringBatchable {
     error NotRecipient();
     error NotSender();
 
-    modifier onlySenderOrRecipient(uint256 streamId) {
-        if (
-            msg.sender != streams[streamId].sender &&
-            msg.sender != streams[streamId].recipient
-        ) {
-            revert NotSenderOrRecipient();
-        }
-        _;
-    }
-
     constructor(IBentoBoxMinimal _bentoBox, address _wETH) {
         bentoBox = _bentoBox;
         wETH = _wETH;
-        streamIds = 1;
+        streamIds = 1000;
         _bentoBox.registerProtocol();
     }
 
@@ -82,9 +75,10 @@ contract FuroStream is IFuroStream, BoringOwnable, BoringBatchable {
 
         streamId = streamIds++;
 
+        _mint(recipient, streamId);
+
         streams[streamId] = Stream({
             sender: msg.sender,
-            recipient: recipient,
             token: token,
             depositedShares: uint128(depositedShares),
             withdrawnShares: 0,
@@ -110,21 +104,21 @@ contract FuroStream is IFuroStream, BoringOwnable, BoringBatchable {
         address withdrawTo,
         bool toBentoBox,
         bytes memory taskData
-    )
-        external
-        override
-        onlySenderOrRecipient(streamId)
-        returns (uint256 recipientBalance, address to)
-    {
+    ) external override returns (uint256 recipientBalance, address to) {
+        address recipient = ownerOf(streamId);
+        if (msg.sender != streams[streamId].sender && msg.sender != recipient) {
+            revert NotSenderOrRecipient();
+        }
         Stream storage stream = streams[streamId];
         (, recipientBalance) = _balanceOf(stream);
         if (recipientBalance < sharesToWithdraw)
             revert InvalidWithdrawTooMuch();
         stream.withdrawnShares += uint128(sharesToWithdraw);
-        if (msg.sender == stream.recipient && withdrawTo != address(0)) {
+
+        if (msg.sender == recipient && withdrawTo != address(0)) {
             to = withdrawTo;
         } else {
-            to = stream.recipient;
+            to = recipient;
         }
 
         _transferToken(
@@ -149,9 +143,12 @@ contract FuroStream is IFuroStream, BoringOwnable, BoringBatchable {
     function cancelStream(uint256 streamId, bool toBentoBox)
         external
         override
-        onlySenderOrRecipient(streamId)
         returns (uint256 senderBalance, uint256 recipientBalance)
     {
+        address recipient = ownerOf(streamId);
+        if (msg.sender != streams[streamId].sender && msg.sender != recipient) {
+            revert NotSenderOrRecipient();
+        }
         Stream memory stream = streams[streamId];
         (senderBalance, recipientBalance) = _balanceOf(stream);
 
@@ -160,7 +157,7 @@ contract FuroStream is IFuroStream, BoringOwnable, BoringBatchable {
         _transferToken(
             stream.token,
             address(this),
-            stream.recipient,
+            recipient,
             recipientBalance,
             toBentoBox
         );
@@ -190,7 +187,7 @@ contract FuroStream is IFuroStream, BoringOwnable, BoringBatchable {
         return streams[streamId];
     }
 
-    function balanceOf(uint256 streamId)
+    function streamBalanceOf(uint256 streamId)
         external
         view
         override
@@ -224,6 +221,41 @@ contract FuroStream is IFuroStream, BoringOwnable, BoringBatchable {
         Stream storage stream = streams[streamId];
         if (msg.sender != stream.sender) revert NotSender();
         stream.sender = sender;
+    }
+
+    function updateStream(
+        uint256 streamId,
+        uint128 topUpAmount,
+        uint64 extendTime,
+        bool fromBentoBox
+    ) external returns (uint256 depositedShares) {
+        Stream storage stream = streams[streamId];
+        if (msg.sender != stream.sender) revert NotSender();
+
+        address recipient = ownerOf(streamId);
+
+        (, uint256 recipientBalance) = _balanceOf(stream);
+
+        _transferToken(
+            stream.token,
+            address(this),
+            recipient,
+            recipientBalance,
+            true
+        );
+
+        stream.withdrawnShares += uint128(recipientBalance);
+
+        depositedShares = _depositToken(
+            stream.token,
+            stream.sender,
+            recipient,
+            topUpAmount,
+            fromBentoBox
+        );
+
+        stream.depositedShares += uint128(depositedShares);
+        stream.endTime += extendTime;
     }
 
     function _depositToken(

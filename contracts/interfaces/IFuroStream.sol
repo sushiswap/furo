@@ -4,6 +4,9 @@ pragma solidity 0.8.10;
 
 import "./ITasker.sol";
 import "./IBentoBoxMinimal.sol";
+import "../utils/BoringBatchable.sol";
+import "../utils/BoringOwnable.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 interface IFuroStream {
     function setBentoBoxApproval(
@@ -37,7 +40,7 @@ interface IFuroStream {
 
     function updateSender(uint256 streamId, address sender) external;
 
-    function balanceOf(uint256 streamId)
+    function streamBalanceOf(uint256 streamId)
         external
         view
         returns (uint256 senderBalance, uint256 recipientBalance);
@@ -73,7 +76,6 @@ interface IFuroStream {
 
     struct Stream {
         address sender;
-        address recipient;
         address token;
         uint128 depositedShares;
         uint128 withdrawnShares;

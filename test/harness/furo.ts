@@ -30,5 +30,5 @@ export async function getStreamBalance(
   furo: Furo,
   streamId: BigNumber
 ): Promise<{ senderBalance: BigNumber; recipientBalance: BigNumber }> {
-  return furo.balanceOf(streamId);
+  return furo.streamBalanceOf(streamId);
 }
