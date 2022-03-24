@@ -138,7 +138,7 @@ describe("Stream Creation", function () {
 
     expect(oldStreamId.add(1)).to.be.eq(newStreamId);
     expect(newStreamData.sender).to.be.eq(accounts[0].address);
-    expect(newStreamData.recipient).to.be.eq(accounts[1].address);
+    expect(await furoStream.ownerOf(oldStreamId)).to.be.eq(accounts[1].address);
     expect(newStreamData.token).to.be.eq(tokens[0].address);
     expect(newStreamData.depositedShares).to.be.eq(amountToDeposit);
     expect(newStreamData.withdrawnShares).to.be.eq(BigNumber.from(0));
@@ -178,7 +178,7 @@ describe("Stream Creation", function () {
 
     expect(oldStreamId.add(1)).to.be.eq(newStreamId);
     expect(newStreamData.sender).to.be.eq(accounts[0].address);
-    expect(newStreamData.recipient).to.be.eq(accounts[1].address);
+    expect(await furoStream.ownerOf(oldStreamId)).to.be.eq(accounts[1].address);
     expect(newStreamData.token).to.be.eq(tokens[0].address);
     expect(newStreamData.depositedShares).to.be.eq(amountToDeposit);
     expect(newStreamData.withdrawnShares).to.be.eq(BigNumber.from(0));
@@ -229,7 +229,9 @@ describe("Stream Creation", function () {
     );
 
     await expect(
-      furoStream.connect(accounts[1]).updateSender(oldStreamId, accounts[2].address)
+      furoStream
+        .connect(accounts[1])
+        .updateSender(oldStreamId, accounts[2].address)
     ).to.be.revertedWith(customError("NotSender"));
   });
 
@@ -394,7 +396,7 @@ describe("Stream Creation via Native Token", function () {
 
     expect(oldStreamId.add(1)).to.be.eq(newStreamId);
     expect(newStreamData.sender).to.be.eq(accounts[0].address);
-    expect(newStreamData.recipient).to.be.eq(accounts[1].address);
+    expect(await furoStream.ownerOf(oldStreamId)).to.be.eq(accounts[1].address);
     expect(newStreamData.token).to.be.eq(weth.address);
     expect(newStreamData.depositedShares).to.be.eq(amountToDeposit);
     expect(newStreamData.withdrawnShares).to.be.eq(BigNumber.from(0));
@@ -435,7 +437,7 @@ describe("Stream Creation via Native Token", function () {
 
     expect(oldStreamId.add(1)).to.be.eq(newStreamId);
     expect(newStreamData.sender).to.be.eq(accounts[0].address);
-    expect(newStreamData.recipient).to.be.eq(accounts[1].address);
+    expect(await furoStream.ownerOf(oldStreamId)).to.be.eq(accounts[1].address);
     expect(newStreamData.token).to.be.eq(weth.address);
     expect(newStreamData.depositedShares).to.be.eq(amountToDeposit);
     expect(newStreamData.withdrawnShares).to.be.eq(BigNumber.from(0));
@@ -793,7 +795,7 @@ describe("Stream Withdraw", function () {
     const recipientOldBentoBalance = await getBentoBalance(
       bento,
       tokens[0],
-      streamData.recipient
+      await furoStream.ownerOf(streamId)
     );
 
     await furoStream.withdrawFromStream(
@@ -807,7 +809,7 @@ describe("Stream Withdraw", function () {
     const recipientNewBentoBalance = await getBentoBalance(
       bento,
       tokens[0],
-      streamData.recipient
+      await furoStream.ownerOf(streamId)
     );
 
     const streamDataNew = await snapshotStreamData(furoStream, streamId);
@@ -831,7 +833,9 @@ describe("Stream Withdraw", function () {
     const amountToWithdraw = streamData.depositedShares
       .mul((await latest()) - streamData.startTime)
       .div(streamData.endTime - streamData.startTime);
-    const recipientOldBalance = await tokens[0].balanceOf(streamData.recipient);
+    const recipientOldBalance = await tokens[0].balanceOf(
+      await furoStream.ownerOf(streamId)
+    );
 
     await furoStream.withdrawFromStream(
       streamId,
@@ -841,7 +845,9 @@ describe("Stream Withdraw", function () {
       "0x"
     );
 
-    const recipientNewBalance = await tokens[0].balanceOf(streamData.recipient);
+    const recipientNewBalance = await tokens[0].balanceOf(
+      await furoStream.ownerOf(streamId)
+    );
 
     const streamDataNew = await snapshotStreamData(furoStream, streamId);
 
@@ -872,7 +878,11 @@ describe("Stream Withdraw", function () {
     const streamDataNew = await snapshotStreamData(furoStream, streamId);
     expect(streamData.depositedShares).to.be.eq(streamDataNew.withdrawnShares);
     expect(
-      await getBentoBalance(bento, tokens[0], streamDataNew.recipient)
+      await getBentoBalance(
+        bento,
+        tokens[0],
+        await furoStream.ownerOf(streamId)
+      )
     ).to.be.eq(streamDataNew.depositedShares);
     expect(senderBalance).to.be.eq(0);
     expect(recipientBalance).to.be.eq(0);
@@ -901,7 +911,11 @@ describe("Stream Withdraw", function () {
     const streamDataNew = await snapshotStreamData(furoStream, streamId);
     expect(streamData.depositedShares).to.be.eq(streamDataNew.withdrawnShares);
     expect(
-      await getBentoBalance(bento, tokens[0], streamDataNew.recipient)
+      await getBentoBalance(
+        bento,
+        tokens[0],
+        await furoStream.ownerOf(streamId)
+      )
     ).to.be.eq(streamDataNew.depositedShares);
     expect(senderBalance).to.be.eq(0);
     expect(recipientBalance).to.be.eq(0);
@@ -977,7 +991,11 @@ describe("Stream Withdraw", function () {
     const streamDataNew = await snapshotStreamData(furoStream, streamId);
     expect(streamData.depositedShares).to.be.eq(streamDataNew.withdrawnShares);
     expect(
-      await getBentoBalance(bento, tokens[0], streamData.recipient)
+      await getBentoBalance(
+        bento,
+        tokens[0],
+        await furoStream.ownerOf(streamId)
+      )
     ).to.be.eq(streamDataNew.depositedShares);
     expect(senderBalance).to.be.eq(0);
     expect(recipientBalance).to.be.eq(0);
@@ -1104,7 +1122,7 @@ describe("Stream Cancel", function () {
     const recipientBentoBefore = await getBentoBalance(
       bento,
       tokens[0],
-      streamData.recipient
+      await furoStream.ownerOf(streamId)
     );
 
     await furoStream.cancelStream(streamId, true);
@@ -1122,7 +1140,7 @@ describe("Stream Cancel", function () {
     const recipientBentoAfter = await getBentoBalance(
       bento,
       tokens[0],
-      streamData.recipient
+      await furoStream.ownerOf(streamId)
     );
 
     expect(senderBentoAfter).to.be.eq(senderBentoBefore.add(senderBalance));
@@ -1142,7 +1160,7 @@ describe("Stream Cancel", function () {
 
     const senderBalanceBefore = await tokens[0].balanceOf(streamData.sender);
     const recipientBalanceBefore = await tokens[0].balanceOf(
-      streamData.recipient
+      await furoStream.ownerOf(streamId)
     );
 
     await furoStream.cancelStream(streamId, false);
@@ -1153,7 +1171,7 @@ describe("Stream Cancel", function () {
 
     const senderBalanceAfter = await tokens[0].balanceOf(streamData.sender);
     const recipientBalanceAfter = await tokens[0].balanceOf(
-      streamData.recipient
+      await furoStream.ownerOf(streamId)
     );
 
     expect(senderBalanceAfter).to.be.eq(senderBalanceBefore.add(senderBalance));
@@ -1177,7 +1195,7 @@ describe("Stream Cancel", function () {
     const recipientBentoBefore = await getBentoBalance(
       bento,
       tokens[0],
-      streamData.recipient
+      await furoStream.ownerOf(streamId)
     );
 
     await furoStream.cancelStream(streamId, true);
@@ -1194,7 +1212,7 @@ describe("Stream Cancel", function () {
     const recipientBentoAfter = await getBentoBalance(
       bento,
       tokens[0],
-      streamData.recipient
+      await furoStream.ownerOf(streamId)
     );
 
     expect(senderBentoAfter).to.be.eq(senderBentoBefore.add(senderBalance));
@@ -1222,7 +1240,7 @@ describe("Stream Cancel", function () {
     const recipientBentoBefore = await getBentoBalance(
       bento,
       tokens[0],
-      streamData.recipient
+      await furoStream.ownerOf(streamId)
     );
 
     await furoStream.cancelStream(streamId, true);
@@ -1235,7 +1253,7 @@ describe("Stream Cancel", function () {
     const recipientBentoAfter = await getBentoBalance(
       bento,
       tokens[0],
-      streamData.recipient
+      await furoStream.ownerOf(streamId)
     );
 
     expect(senderBentoAfter).to.be.eq(senderBentoBefore.add(senderBalance));
@@ -1313,15 +1331,21 @@ describe("Stream Creation - Batchable", function () {
       "setBentoBoxApproval",
       [accounts[0].address, true, v, r, s]
     );
-    let createStreamData = furoStream.interface.encodeFunctionData("createStream", [
-      accounts[1].address,
-      tokens[0].address,
-      startTime,
-      endTime,
-      amountToDeposit,
-      false,
-    ]);
-    await furoStream.batch([masterContractApprovalData, createStreamData], true);
+    let createStreamData = furoStream.interface.encodeFunctionData(
+      "createStream",
+      [
+        accounts[1].address,
+        tokens[0].address,
+        startTime,
+        endTime,
+        amountToDeposit,
+        false,
+      ]
+    );
+    await furoStream.batch(
+      [masterContractApprovalData, createStreamData],
+      true
+    );
     const newStreamId = await snapshotStreamId(furoStream);
     const newStreamData = await snapshotStreamData(furoStream, oldStreamId);
     const tokenBalanceAfter = await tokens[0].balanceOf(accounts[0].address);
@@ -1333,7 +1357,7 @@ describe("Stream Creation - Batchable", function () {
 
     expect(oldStreamId.add(1)).to.be.eq(newStreamId);
     expect(newStreamData.sender).to.be.eq(accounts[0].address);
-    expect(newStreamData.recipient).to.be.eq(accounts[1].address);
+    expect(await furoStream.ownerOf(oldStreamId)).to.be.eq(accounts[1].address);
     expect(newStreamData.token).to.be.eq(tokens[0].address);
     expect(newStreamData.depositedShares).to.be.eq(amountToDeposit);
     expect(newStreamData.withdrawnShares).to.be.eq(BigNumber.from(0));
