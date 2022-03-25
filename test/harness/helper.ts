@@ -6,6 +6,8 @@ export const ONE = BigNumber.from(1);
 export const TWO = BigNumber.from(2);
 export const E18 = BigNumber.from(10).pow(18);
 export const MAX_FEE = BigNumber.from(10000);
+export const ONE_YEAR = BigNumber.from(60 * 60 * 24 * 365);
+export const ONE_MONTH = BigNumber.from(60 * 60 * 24 * 30);
 
 export const ADDRESS_ZERO = "0x0000000000000000000000000000000000000000";
 
