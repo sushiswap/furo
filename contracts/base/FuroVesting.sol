@@ -100,7 +100,7 @@ contract FuroVesting is
 
     function withdraw(
         uint256 vestId,
-        bytes memory taskData,
+        bytes calldata taskData,
         bool toBentoBox
     ) external override {
         Vest storage vest = vests[vestId];

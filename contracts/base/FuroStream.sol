@@ -103,7 +103,7 @@ contract FuroStream is
         uint256 sharesToWithdraw,
         address withdrawTo,
         bool toBentoBox,
-        bytes memory taskData
+        bytes calldata taskData
     ) external override returns (uint256 recipientBalance, address to) {
         address recipient = ownerOf(streamId);
         if (msg.sender != streams[streamId].sender && msg.sender != recipient) {
