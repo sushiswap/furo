@@ -53,4 +53,32 @@ interface IFuroVesting {
         uint128 stepAmount;
         uint128 claimed;
     }
+
+    event LogCreateVesting(
+        IERC20 indexed token,
+        address indexed owner,
+        address indexed recipient,
+        uint32 start,
+        uint32 cliffDuration,
+        uint32 stepDuration,
+        uint32 steps,
+        uint128 cliffAmount,
+        uint128 stepAmount
+    );
+
+    event LogWithdraw(
+        uint256 indexed vestId,
+        IERC20 indexed token,
+        bool indexed toBentoBox
+    );
+
+    event LogStopVesting(
+        uint256 indexed vestId,
+        uint256 indexed ownerAmount,
+        uint256 indexed recipientAmount,
+        IERC20 token,
+        bool toBentoBox
+    );
+
+    event LogUpdateOwner(uint256 indexed vestId, address indexed newOwner);
 }

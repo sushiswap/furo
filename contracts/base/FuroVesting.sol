@@ -84,6 +84,18 @@ contract FuroVesting is
             stepAmount: stepAmount,
             claimed: 0
         });
+
+        emit LogCreateVesting(
+            token,
+            msg.sender,
+            recipient,
+            start,
+            cliffDuration,
+            stepDuration,
+            steps,
+            cliffAmount,
+            stepAmount
+        );
     }
 
     function withdraw(
@@ -107,6 +119,8 @@ contract FuroVesting is
         );
 
         if (taskData.length != 0) ITasker(recipient).onTaskReceived(taskData);
+
+        emit LogWithdraw(vestId, vest.token, toBentoBox);
     }
 
     function stopVesting(uint256 vestId, bool toBentoBox) external override {
@@ -131,10 +145,23 @@ contract FuroVesting is
             toBentoBox
         );
 
+        emit LogStopVesting(
+            vestId,
+            returnAmount,
+            canClaim,
+            vest.token,
+            toBentoBox
+        );
+
         delete vests[vestId];
     }
 
-    function vestBalance(uint256 vestId) external override view returns (uint256) {
+    function vestBalance(uint256 vestId)
+        external
+        view
+        override
+        returns (uint256)
+    {
         Vest memory vest = vests[vestId];
         return _balanceOf(vest) - vest.claimed;
     }
@@ -160,10 +187,11 @@ contract FuroVesting is
         claimable = vest.cliffAmount + (vest.stepAmount * stepPassed);
     }
 
-    function updateOwner(uint256 vestId, address newOwner) external override{
+    function updateOwner(uint256 vestId, address newOwner) external override {
         Vest storage vest = vests[vestId];
         if (vest.owner != msg.sender) revert NotOwner();
         vest.owner = newOwner;
+        emit LogUpdateOwner(vestId, newOwner);
     }
 
     function _depositToken(
