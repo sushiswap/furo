@@ -40,6 +40,13 @@ interface IFuroStream {
 
     function updateSender(uint256 streamId, address sender) external;
 
+    function updateStream(
+        uint256 streamId,
+        uint128 topUpAmount,
+        uint64 extendTime,
+        bool fromBentoBox
+    ) external returns (uint256 depositedShares);
+
     function streamBalanceOf(uint256 streamId)
         external
         view
