@@ -1,6 +1,8 @@
-# HardHat Foundation
+# Furo
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+Allows you to stream and vest tokens, built on top of Bentobox.
 
 ## Env
 
