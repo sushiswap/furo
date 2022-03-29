@@ -85,7 +85,8 @@ contract FuroVesting is
             claimed: 0
         });
 
-        emit LogCreateVesting(
+        emit CreateVesting(
+            vestId,
             token,
             msg.sender,
             recipient,
@@ -94,7 +95,8 @@ contract FuroVesting is
             stepDuration,
             steps,
             cliffAmount,
-            stepAmount
+            stepAmount,
+            fromBentoBox
         );
     }
 
@@ -120,7 +122,7 @@ contract FuroVesting is
 
         if (taskData.length != 0) ITasker(recipient).onTaskReceived(taskData);
 
-        emit LogWithdraw(vestId, vest.token, toBentoBox);
+        emit Withdraw(vestId, vest.token, canClaim, toBentoBox);
     }
 
     function stopVesting(uint256 vestId, bool toBentoBox) external override {
@@ -144,8 +146,7 @@ contract FuroVesting is
             returnAmount,
             toBentoBox
         );
-
-        emit LogStopVesting(
+        emit CancelVesting(
             vestId,
             returnAmount,
             canClaim,
