@@ -28,6 +28,13 @@ contract FuroVesting is
         _bentoBox.registerProtocol();
     }
 
+    function tokenURI(uint256 id)
+        public
+        view
+        override
+        returns (string memory)
+    {}
+
     function setBentoBoxApproval(
         address user,
         bool approved,
@@ -106,7 +113,7 @@ contract FuroVesting is
         bool toBentoBox
     ) external override {
         Vest storage vest = vests[vestId];
-        address recipient = ownerOf(vestId);
+        address recipient = ownerOf[vestId];
         if (recipient != msg.sender) revert NotOwner();
         uint256 canClaim = _balanceOf(vest) - vest.claimed;
 
@@ -134,7 +141,7 @@ contract FuroVesting is
         _transferToken(
             address(vest.token),
             address(this),
-            ownerOf(vestId),
+            ownerOf[vestId],
             canClaim,
             toBentoBox
         );
