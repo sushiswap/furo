@@ -54,7 +54,7 @@ interface IFuroStream {
 
     function getStream(uint256 streamId) external view returns (Stream memory);
 
-    event LogCreateStream(
+    event CreateStream(
         uint256 indexed streamId,
         address indexed sender,
         address indexed recipient,
@@ -65,7 +65,14 @@ interface IFuroStream {
         bool fromBentoBox
     );
 
-    event LogWithdrawFromStream(
+    event UpdateStream(
+        uint256 indexed streamId,
+        uint128 indexed topUpAmount,
+        uint64 indexed extendTime,
+        bool fromBentoBox
+    );
+
+    event Withdraw(
         uint256 indexed streamId,
         uint256 indexed sharesToWithdraw,
         address indexed withdrawTo,
@@ -73,7 +80,7 @@ interface IFuroStream {
         bool toBentoBox
     );
 
-    event LogCancelStream(
+    event CancelStream(
         uint256 indexed streamId,
         uint256 indexed senderBalance,
         uint256 indexed recipientBalance,

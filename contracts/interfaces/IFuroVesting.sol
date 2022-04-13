@@ -54,8 +54,9 @@ interface IFuroVesting {
         uint128 claimed;
     }
 
-    event LogCreateVesting(
-        IERC20 indexed token,
+    event CreateVesting(
+        uint256 indexed vestId,
+        IERC20 token,
         address indexed owner,
         address indexed recipient,
         uint32 start,
@@ -63,16 +64,18 @@ interface IFuroVesting {
         uint32 stepDuration,
         uint32 steps,
         uint128 cliffAmount,
-        uint128 stepAmount
+        uint128 stepAmount,
+        bool fromBentoBox
     );
 
-    event LogWithdraw(
+    event Withdraw(
         uint256 indexed vestId,
         IERC20 indexed token,
-        bool indexed toBentoBox
+        uint256 indexed amount,
+        bool toBentoBox
     );
 
-    event LogStopVesting(
+    event CancelVesting(
         uint256 indexed vestId,
         uint256 indexed ownerAmount,
         uint256 indexed recipientAmount,

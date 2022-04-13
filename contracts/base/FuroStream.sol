@@ -86,7 +86,7 @@ contract FuroStream is
             endTime: endTime
         });
 
-        emit LogCreateStream(
+        emit CreateStream(
             streamId,
             msg.sender,
             recipient,
@@ -131,7 +131,7 @@ contract FuroStream is
 
         if (taskData.length != 0) ITasker(to).onTaskReceived(taskData);
 
-        emit LogWithdrawFromStream(
+        emit Withdraw(
             streamId,
             sharesToWithdraw,
             withdrawTo,
@@ -169,7 +169,7 @@ contract FuroStream is
             toBentoBox
         );
 
-        emit LogCancelStream(
+        emit CancelStream(
             streamId,
             senderBalance,
             recipientBalance,
@@ -256,6 +256,13 @@ contract FuroStream is
 
         stream.depositedShares += uint128(depositedShares);
         stream.endTime += extendTime;
+
+        emit UpdateStream(
+            streamId,
+            topUpAmount,
+            extendTime,
+            fromBentoBox
+        );
     }
 
     function _depositToken(
