@@ -32,6 +32,13 @@ contract FuroStream is
         _bentoBox.registerProtocol();
     }
 
+    function tokenURI(uint256 id)
+        public
+        view
+        override
+        returns (string memory)
+    {}
+
     function setBentoBoxApproval(
         address user,
         bool approved,
@@ -105,7 +112,7 @@ contract FuroStream is
         bool toBentoBox,
         bytes calldata taskData
     ) external override returns (uint256 recipientBalance, address to) {
-        address recipient = ownerOf(streamId);
+        address recipient = ownerOf[streamId];
         if (msg.sender != streams[streamId].sender && msg.sender != recipient) {
             revert NotSenderOrRecipient();
         }
@@ -145,7 +152,7 @@ contract FuroStream is
         override
         returns (uint256 senderBalance, uint256 recipientBalance)
     {
-        address recipient = ownerOf(streamId);
+        address recipient = ownerOf[streamId];
         if (msg.sender != streams[streamId].sender && msg.sender != recipient) {
             revert NotSenderOrRecipient();
         }
@@ -231,7 +238,7 @@ contract FuroStream is
         Stream storage stream = streams[streamId];
         if (msg.sender != stream.sender) revert NotSender();
 
-        address recipient = ownerOf(streamId);
+        address recipient = ownerOf[streamId];
 
         (, uint256 recipientBalance) = _balanceOf(stream);
 
@@ -256,12 +263,7 @@ contract FuroStream is
         stream.depositedShares += uint128(depositedShares);
         stream.endTime += extendTime;
 
-        emit UpdateStream(
-            streamId,
-            topUpAmount,
-            extendTime,
-            fromBentoBox
-        );
+        emit UpdateStream(streamId, topUpAmount, extendTime, fromBentoBox);
     }
 
     function _depositToken(
