@@ -209,11 +209,10 @@ contract FuroStream is
             senderBalance = 0;
         } else {
             uint256 timeDelta = block.timestamp - stream.startTime;
-            recipientBalance =
-                ((stream.depositedShares * timeDelta) /
-                    (stream.endTime - stream.startTime)) -
-                uint256(stream.withdrawnShares);
-            senderBalance = uint256(stream.depositedShares) - recipientBalance;
+            uint256 bal = ((stream.depositedShares * timeDelta) /
+                (stream.endTime - stream.startTime));
+            recipientBalance = bal - uint256(stream.withdrawnShares);
+            senderBalance = uint256(stream.depositedShares) - bal;
         }
     }
 
@@ -249,7 +248,7 @@ contract FuroStream is
         depositedShares = _depositToken(
             stream.token,
             stream.sender,
-            recipient,
+            address(this),
             topUpAmount,
             fromBentoBox
         );
