@@ -17,7 +17,7 @@
     "goerli:verify": "hardhat --network goerli etherscan-verify --solc-input --license MIT",
     "goerli:export": "hardhat --network goerli export --export exports/goerli.json",
     "kovan:deploy": "hardhat --network kovan deploy",
-    "kovan:export": "hardhat --network kovan export --export exports/kovan.json",
+    "kovan:export": "hardhat --network kovan export --export-all exports/kovan.json",
     "kovan:verify": "hardhat --network kovan etherscan-verify --solc-input --license MIT",
     "moonbase:deploy": "hardhat --network moonbase deploy",
     "moonbase:export": "hardhat --network moonbase export --export exports/moonbase.json",
