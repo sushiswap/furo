@@ -10,5 +10,25 @@
   "solidity.packageDefaultDependenciesContractsDirectory": "",
   "solidity.enabledAsYouTypeCompilationErrorCheck": true,
   "solidity.validationDelay": 1500,
-  "solidity.packageDefaultDependenciesDirectory": "node_modules"
+  "solidity.packageDefaultDependenciesDirectory": "node_modules",
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#cb90bd",
+    "activityBar.activeBorder": "#e5ebd4",
+    "activityBar.background": "#cb90bd",
+    "activityBar.foreground": "#15202b",
+    "activityBar.inactiveForeground": "#15202b99",
+    "activityBarBadge.background": "#e5ebd4",
+    "activityBarBadge.foreground": "#15202b",
+    "sash.hoverBorder": "#cb90bd",
+    "statusBar.background": "#bb6da8",
+    "statusBar.foreground": "#15202b",
+    "statusBarItem.hoverBackground": "#a74e91",
+    "statusBarItem.remoteBackground": "#bb6da8",
+    "statusBarItem.remoteForeground": "#15202b",
+    "titleBar.activeBackground": "#bb6da8",
+    "titleBar.activeForeground": "#15202b",
+    "titleBar.inactiveBackground": "#bb6da899",
+    "titleBar.inactiveForeground": "#15202b99"
+  },
+  "peacock.color": "#bb6da8"
 }
