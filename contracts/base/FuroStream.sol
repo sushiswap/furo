@@ -87,7 +87,7 @@ contract FuroStream is
         streams[streamId] = Stream({
             sender: msg.sender,
             token: token,
-            depositedShares: uint128(depositedShares),
+            depositedShares: uint128(depositedShares), // @dev safe since we know bento returns u128
             withdrawnShares: 0,
             startTime: startTime,
             endTime: endTime
