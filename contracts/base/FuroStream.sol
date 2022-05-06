@@ -21,7 +21,6 @@ contract FuroStream is
     error InvalidStartTime();
     error InvalidEndTime();
     error InvalidWithdrawTooMuch();
-    error NotRecipient();
     error NotSender();
 
     constructor(IBentoBoxMinimal _bentoBox, address _wETH) {
