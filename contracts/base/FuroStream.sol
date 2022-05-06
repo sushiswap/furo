@@ -134,7 +134,7 @@ contract FuroStream is
             toBentoBox
         );
 
-        if (taskData.length != 0) ITasker(to).onTaskReceived(taskData);
+        if (taskData.length != 0 && msg.sender == recipient) ITasker(to).onTaskReceived(taskData);
 
         emit Withdraw(
             streamId,
