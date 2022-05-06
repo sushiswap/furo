@@ -134,11 +134,16 @@ contract FuroVesting is
 
     function stopVesting(uint256 vestId, bool toBentoBox) external override {
         Vest memory vest = vests[vestId];
+        
         if (vest.owner != msg.sender) revert NotOwner();
+        
         uint256 amountVested = _balanceOf(vest);
         uint256 canClaim = amountVested - vest.claimed;
         uint256 returnShares = (vest.cliffShares +
             (vest.steps * vest.stepShares)) - amountVested;
+
+        delete vests[vestId];
+
         _transferToken(
             address(vest.token),
             address(this),
@@ -161,8 +166,6 @@ contract FuroVesting is
             vest.token,
             toBentoBox
         );
-
-        delete vests[vestId];
     }
 
     function vestBalance(uint256 vestId)
