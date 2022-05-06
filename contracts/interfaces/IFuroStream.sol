@@ -5,7 +5,6 @@ pragma solidity 0.8.10;
 import "./ITasker.sol";
 import "./IBentoBoxMinimal.sol";
 import "../utils/BoringBatchable.sol";
-import "../utils/BoringOwnable.sol";
 import "@rari-capital/solmate/src/tokens/ERC721.sol";
 
 interface IFuroStream {
