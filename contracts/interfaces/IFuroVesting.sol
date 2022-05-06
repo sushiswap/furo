@@ -25,8 +25,8 @@ interface IFuroVesting {
         uint32 cliffDuration,
         uint32 stepDuration,
         uint32 steps,
-        uint128 cliffAmount,
-        uint128 stepAmount,
+        uint128 cliffShares,
+        uint128 stepShares,
         bool fromBentoBox
     ) external payable returns (uint256 depositedShares, uint256 vestId);
 
@@ -49,8 +49,8 @@ interface IFuroVesting {
         uint32 cliffDuration;
         uint32 stepDuration;
         uint32 steps;
-        uint128 cliffAmount;
-        uint128 stepAmount;
+        uint128 cliffShares;
+        uint128 stepShares;
         uint128 claimed;
     }
 
@@ -63,8 +63,8 @@ interface IFuroVesting {
         uint32 cliffDuration,
         uint32 stepDuration,
         uint32 steps,
-        uint128 cliffAmount,
-        uint128 stepAmount,
+        uint128 cliffShares,
+        uint128 stepShares,
         bool fromBentoBox
     );
 
