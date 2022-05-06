@@ -20,6 +20,7 @@ contract FuroVesting is
     // custom errors
     error InvalidStart();
     error NotOwner();
+    error InvalidStepSetting();
 
     constructor(IBentoBoxMinimal _bentoBox, address _wETH) {
         bentoBox = _bentoBox;
@@ -69,6 +70,8 @@ contract FuroVesting is
         returns (uint256 depositedShares, uint256 vestId)
     {
         if (start < block.timestamp) revert InvalidStart();
+        if(stepDuration == 0 || steps == 0) revert InvalidStepSetting();
+
         depositedShares = _depositToken(
             address(token),
             msg.sender,
@@ -116,6 +119,8 @@ contract FuroVesting is
         address recipient = ownerOf[vestId];
         if (recipient != msg.sender) revert NotOwner();
         uint256 canClaim = _balanceOf(vest) - vest.claimed;
+
+        if (canClaim == 0) return;
 
         vest.claimed += uint128(canClaim);
 
