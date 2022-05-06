@@ -215,11 +215,11 @@ contract FuroStream is
             recipientBalance = stream.depositedShares - stream.withdrawnShares;
             senderBalance = 0;
         } else {
-            uint256 timeDelta = block.timestamp - stream.startTime;
-            uint256 bal = ((stream.depositedShares * timeDelta) /
+            uint64 timeDelta = uint64(block.timestamp) - stream.startTime;
+            uint128 streamed = ((stream.depositedShares * timeDelta) /
                 (stream.endTime - stream.startTime));
-            recipientBalance = bal - uint256(stream.withdrawnShares);
-            senderBalance = uint256(stream.depositedShares) - bal;
+            recipientBalance = streamed - stream.withdrawnShares;
+            senderBalance = stream.depositedShares - streamed;
         }
     }
 
