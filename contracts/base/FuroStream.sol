@@ -238,9 +238,22 @@ contract FuroStream is
         Stream storage stream = streams[streamId];
         if (msg.sender != stream.sender) revert NotSender();
 
+        depositedShares = _depositToken(
+            stream.token,
+            stream.sender,
+            address(this),
+            topUpAmount,
+            fromBentoBox
+        );
+
         address recipient = ownerOf[streamId];
 
         (, uint256 recipientBalance) = _balanceOf(stream);
+
+        stream.startTime = uint64(block.timestamp);
+        stream.withdrawnShares = 0;
+        stream.depositedShares += uint128(depositedShares);
+        stream.endTime += extendTime;
 
         _transferToken(
             stream.token,
@@ -249,19 +262,6 @@ contract FuroStream is
             recipientBalance,
             true
         );
-
-        stream.withdrawnShares += uint128(recipientBalance);
-
-        depositedShares = _depositToken(
-            stream.token,
-            stream.sender,
-            address(this), 
-            topUpAmount,
-            fromBentoBox
-        );
-
-        stream.depositedShares += uint128(depositedShares);
-        stream.endTime += extendTime;
 
         emit UpdateStream(streamId, topUpAmount, extendTime, fromBentoBox);
     }
