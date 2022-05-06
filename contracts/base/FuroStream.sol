@@ -115,7 +115,7 @@ contract FuroStream is
             revert NotSenderOrRecipient();
         }
         Stream storage stream = streams[streamId];
-        (, recipientBalance) = _balanceOf(stream);
+        (, recipientBalance) = _streamBalanceOf(stream);
         if (recipientBalance < sharesToWithdraw)
             revert InvalidWithdrawTooMuch();
         stream.withdrawnShares += uint128(sharesToWithdraw);
@@ -155,7 +155,7 @@ contract FuroStream is
             revert NotSenderOrRecipient();
         }
         Stream memory stream = streams[streamId];
-        (senderBalance, recipientBalance) = _balanceOf(stream);
+        (senderBalance, recipientBalance) = _streamBalanceOf(stream);
 
         delete streams[streamId];
 
@@ -198,10 +198,10 @@ contract FuroStream is
         override
         returns (uint256 senderBalance, uint256 recipientBalance)
     {
-        return _balanceOf(streams[streamId]);
+        return _streamBalanceOf(streams[streamId]);
     }
 
-    function _balanceOf(Stream memory stream)
+    function _streamBalanceOf(Stream memory stream)
         internal
         view
         returns (uint256 senderBalance, uint256 recipientBalance)
@@ -246,7 +246,7 @@ contract FuroStream is
 
         address recipient = ownerOf[streamId];
 
-        (, uint256 recipientBalance) = _balanceOf(stream);
+        (, uint256 recipientBalance) = _streamBalanceOf(stream);
 
         stream.startTime = uint64(block.timestamp);
         stream.withdrawnShares = 0;
@@ -299,13 +299,13 @@ contract FuroStream is
         address token,
         address from,
         address to,
-        uint256 amount,
+        uint256 share,
         bool toBentoBox
     ) internal {
         if (toBentoBox) {
-            bentoBox.transfer(token, from, to, amount);
+            bentoBox.transfer(token, from, to, share);
         } else {
-            bentoBox.withdraw(token, from, to, 0, amount);
+            bentoBox.withdraw(token, from, to, 0, share);
         }
     }
 }
