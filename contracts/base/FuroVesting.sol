@@ -7,8 +7,7 @@ import "../interfaces/IFuroVesting.sol";
 contract FuroVesting is
     IFuroVesting,
     ERC721("Furo Vesting", "FUROVEST"),
-    BoringBatchable,
-    BoringOwnable
+    BoringBatchable
 {
     IBentoBoxMinimal public immutable bentoBox;
     address public immutable wETH;
@@ -20,6 +19,8 @@ contract FuroVesting is
     // custom errors
     error InvalidStart();
     error NotOwner();
+    error NotVestReceiver();
+    error InvalidStepSetting();
 
     constructor(IBentoBoxMinimal _bentoBox, address _wETH) {
         bentoBox = _bentoBox;
@@ -59,8 +60,8 @@ contract FuroVesting is
         uint32 cliffDuration,
         uint32 stepDuration,
         uint32 steps,
-        uint128 cliffAmount,
-        uint128 stepAmount,
+        uint128 cliffShares,
+        uint128 stepShares,
         bool fromBentoBox
     )
         external
@@ -69,11 +70,13 @@ contract FuroVesting is
         returns (uint256 depositedShares, uint256 vestId)
     {
         if (start < block.timestamp) revert InvalidStart();
+        if (stepDuration == 0 || steps == 0) revert InvalidStepSetting();
+
         depositedShares = _depositToken(
             address(token),
             msg.sender,
             address(this),
-            cliffAmount + (stepAmount * steps),
+            cliffShares + (stepShares * steps),
             fromBentoBox
         );
 
@@ -87,8 +90,8 @@ contract FuroVesting is
             cliffDuration: cliffDuration,
             stepDuration: stepDuration,
             steps: steps,
-            cliffAmount: cliffAmount,
-            stepAmount: stepAmount,
+            cliffShares: cliffShares,
+            stepShares: stepShares,
             claimed: 0
         });
 
@@ -101,8 +104,8 @@ contract FuroVesting is
             cliffDuration,
             stepDuration,
             steps,
-            cliffAmount,
-            stepAmount,
+            cliffShares,
+            stepShares,
             fromBentoBox
         );
     }
@@ -114,8 +117,10 @@ contract FuroVesting is
     ) external override {
         Vest storage vest = vests[vestId];
         address recipient = ownerOf[vestId];
-        if (recipient != msg.sender) revert NotOwner();
+        if (recipient != msg.sender) revert NotVestReceiver();
         uint256 canClaim = _balanceOf(vest) - vest.claimed;
+
+        if (canClaim == 0) return;
 
         vest.claimed += uint128(canClaim);
 
@@ -134,10 +139,16 @@ contract FuroVesting is
 
     function stopVesting(uint256 vestId, bool toBentoBox) external override {
         Vest memory vest = vests[vestId];
+
         if (vest.owner != msg.sender) revert NotOwner();
-        uint256 canClaim = _balanceOf(vest) - vest.claimed;
-        uint256 returnAmount = (vest.cliffAmount +
-            (vest.steps * vest.stepAmount)) - canClaim;
+
+        uint256 amountVested = _balanceOf(vest);
+        uint256 canClaim = amountVested - vest.claimed;
+        uint256 returnShares = (vest.cliffShares +
+            (vest.steps * vest.stepShares)) - amountVested;
+
+        delete vests[vestId];
+
         _transferToken(
             address(vest.token),
             address(this),
@@ -150,18 +161,16 @@ contract FuroVesting is
             address(vest.token),
             address(this),
             msg.sender,
-            returnAmount,
+            returnShares,
             toBentoBox
         );
         emit CancelVesting(
             vestId,
-            returnAmount,
+            returnShares,
             canClaim,
             vest.token,
             toBentoBox
         );
-
-        delete vests[vestId];
     }
 
     function vestBalance(uint256 vestId)
@@ -192,7 +201,7 @@ contract FuroVesting is
             passedSinceCliff / vest.stepDuration
         );
 
-        claimable = vest.cliffAmount + (vest.stepAmount * stepPassed);
+        claimable = vest.cliffShares + (vest.stepShares * stepPassed);
     }
 
     function updateOwner(uint256 vestId, address newOwner) external override {
@@ -206,28 +215,27 @@ contract FuroVesting is
         address token,
         address from,
         address to,
-        uint256 amount,
+        uint256 shares,
         bool fromBentoBox
     ) internal returns (uint256 depositedShares) {
-        if (token == wETH && address(this).balance >= amount) {
-            (, depositedShares) = bentoBox.deposit{value: amount}(
-                address(0),
-                from,
-                to,
-                amount,
-                0
-            );
+        if (
+            token == wETH &&
+            address(this).balance >=
+            bentoBox.toAmount(address(0), shares, false)
+        ) {
+            (, depositedShares) = bentoBox.deposit{
+                value: address(this).balance
+            }(address(0), from, to, address(this).balance, 0);
         } else {
             if (fromBentoBox) {
-                depositedShares = bentoBox.toShare(token, amount, false);
-                bentoBox.transfer(token, from, to, depositedShares);
+                bentoBox.transfer(token, from, to, shares);
             } else {
                 (, depositedShares) = bentoBox.deposit(
                     token,
                     from,
                     to,
-                    amount,
-                    0
+                    0,
+                    shares
                 );
             }
         }
@@ -237,13 +245,13 @@ contract FuroVesting is
         address token,
         address from,
         address to,
-        uint256 amount,
+        uint256 shares,
         bool toBentoBox
     ) internal {
         if (toBentoBox) {
-            bentoBox.transfer(token, from, to, amount);
+            bentoBox.transfer(token, from, to, shares);
         } else {
-            bentoBox.withdraw(token, from, to, 0, amount);
+            bentoBox.withdraw(token, from, to, 0, shares);
         }
     }
 }
