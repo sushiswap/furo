@@ -426,7 +426,7 @@ describe("Withdraw", () => {
 
   it("should not allow to withdraw if not owner", async function () {
     await expect(furoVesting.withdraw(vestId, "0x", false)).to.be.revertedWith(
-      "NotOwner()"
+      "NotVestReceiver()"
     );
   });
 

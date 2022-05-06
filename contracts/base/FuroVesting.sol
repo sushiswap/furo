@@ -7,8 +7,7 @@ import "../interfaces/IFuroVesting.sol";
 contract FuroVesting is
     IFuroVesting,
     ERC721("Furo Vesting", "FUROVEST"),
-    BoringBatchable,
-    BoringOwnable
+    BoringBatchable
 {
     IBentoBoxMinimal public immutable bentoBox;
     address public immutable wETH;
@@ -20,6 +19,7 @@ contract FuroVesting is
     // custom errors
     error InvalidStart();
     error NotOwner();
+    error NotVestReceiver();
     error InvalidStepSetting();
 
     constructor(IBentoBoxMinimal _bentoBox, address _wETH) {
@@ -70,7 +70,7 @@ contract FuroVesting is
         returns (uint256 depositedShares, uint256 vestId)
     {
         if (start < block.timestamp) revert InvalidStart();
-        if(stepDuration == 0 || steps == 0) revert InvalidStepSetting();
+        if (stepDuration == 0 || steps == 0) revert InvalidStepSetting();
 
         depositedShares = _depositToken(
             address(token),
@@ -117,7 +117,7 @@ contract FuroVesting is
     ) external override {
         Vest storage vest = vests[vestId];
         address recipient = ownerOf[vestId];
-        if (recipient != msg.sender) revert NotOwner();
+        if (recipient != msg.sender) revert NotVestReceiver();
         uint256 canClaim = _balanceOf(vest) - vest.claimed;
 
         if (canClaim == 0) return;
@@ -139,9 +139,9 @@ contract FuroVesting is
 
     function stopVesting(uint256 vestId, bool toBentoBox) external override {
         Vest memory vest = vests[vestId];
-        
+
         if (vest.owner != msg.sender) revert NotOwner();
-        
+
         uint256 amountVested = _balanceOf(vest);
         uint256 canClaim = amountVested - vest.claimed;
         uint256 returnShares = (vest.cliffShares +
