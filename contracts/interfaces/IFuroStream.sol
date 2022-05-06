@@ -45,7 +45,7 @@ interface IFuroStream {
         uint128 topUpAmount,
         uint64 extendTime,
         bool fromBentoBox
-    ) external returns (uint256 depositedShares);
+    ) external payable returns (uint256 depositedShares);
 
     function streamBalanceOf(uint256 streamId)
         external

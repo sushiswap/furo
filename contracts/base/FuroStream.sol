@@ -234,7 +234,7 @@ contract FuroStream is
         uint128 topUpAmount,
         uint64 extendTime,
         bool fromBentoBox
-    ) external returns (uint256 depositedShares) {
+    ) external payable override returns (uint256 depositedShares) {
         Stream storage stream = streams[streamId];
         if (msg.sender != stream.sender) revert NotSender();
 
