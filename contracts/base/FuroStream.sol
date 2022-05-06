@@ -255,7 +255,7 @@ contract FuroStream is
         depositedShares = _depositToken(
             stream.token,
             stream.sender,
-            address(this),
+            address(this), 
             topUpAmount,
             fromBentoBox
         );
