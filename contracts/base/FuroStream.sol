@@ -7,7 +7,6 @@ import "../interfaces/IFuroStream.sol";
 contract FuroStream is
     IFuroStream,
     ERC721("Furo Stream", "FUROSTREAM"),
-    BoringOwnable,
     BoringBatchable
 {
     IBentoBoxMinimal public immutable bentoBox;
@@ -22,7 +21,6 @@ contract FuroStream is
     error InvalidStartTime();
     error InvalidEndTime();
     error InvalidWithdrawTooMuch();
-    error NotRecipient();
     error NotSender();
 
     constructor(IBentoBoxMinimal _bentoBox, address _wETH) {
@@ -87,7 +85,7 @@ contract FuroStream is
         streams[streamId] = Stream({
             sender: msg.sender,
             token: token,
-            depositedShares: uint128(depositedShares),
+            depositedShares: uint128(depositedShares), // @dev safe since we know bento returns u128
             withdrawnShares: 0,
             startTime: startTime,
             endTime: endTime
@@ -117,7 +115,7 @@ contract FuroStream is
             revert NotSenderOrRecipient();
         }
         Stream storage stream = streams[streamId];
-        (, recipientBalance) = _balanceOf(stream);
+        (, recipientBalance) = _streamBalanceOf(stream);
         if (recipientBalance < sharesToWithdraw)
             revert InvalidWithdrawTooMuch();
         stream.withdrawnShares += uint128(sharesToWithdraw);
@@ -136,7 +134,7 @@ contract FuroStream is
             toBentoBox
         );
 
-        if (taskData.length != 0) ITasker(to).onTaskReceived(taskData);
+        if (taskData.length != 0 && msg.sender == recipient) ITasker(to).onTaskReceived(taskData);
 
         emit Withdraw(
             streamId,
@@ -157,7 +155,7 @@ contract FuroStream is
             revert NotSenderOrRecipient();
         }
         Stream memory stream = streams[streamId];
-        (senderBalance, recipientBalance) = _balanceOf(stream);
+        (senderBalance, recipientBalance) = _streamBalanceOf(stream);
 
         delete streams[streamId];
 
@@ -200,10 +198,10 @@ contract FuroStream is
         override
         returns (uint256 senderBalance, uint256 recipientBalance)
     {
-        return _balanceOf(streams[streamId]);
+        return _streamBalanceOf(streams[streamId]);
     }
 
-    function _balanceOf(Stream memory stream)
+    function _streamBalanceOf(Stream memory stream)
         internal
         view
         returns (uint256 senderBalance, uint256 recipientBalance)
@@ -215,11 +213,11 @@ contract FuroStream is
             recipientBalance = stream.depositedShares - stream.withdrawnShares;
             senderBalance = 0;
         } else {
-            uint256 timeDelta = block.timestamp - stream.startTime;
-            uint256 bal = ((stream.depositedShares * timeDelta) /
+            uint64 timeDelta = uint64(block.timestamp) - stream.startTime;
+            uint128 streamed = ((stream.depositedShares * timeDelta) /
                 (stream.endTime - stream.startTime));
-            recipientBalance = bal - uint256(stream.withdrawnShares);
-            senderBalance = uint256(stream.depositedShares) - bal;
+            recipientBalance = streamed - stream.withdrawnShares;
+            senderBalance = stream.depositedShares - streamed;
         }
     }
 
@@ -234,23 +232,9 @@ contract FuroStream is
         uint128 topUpAmount,
         uint64 extendTime,
         bool fromBentoBox
-    ) external returns (uint256 depositedShares) {
+    ) external payable override returns (uint256 depositedShares) {
         Stream storage stream = streams[streamId];
         if (msg.sender != stream.sender) revert NotSender();
-
-        address recipient = ownerOf[streamId];
-
-        (, uint256 recipientBalance) = _balanceOf(stream);
-
-        _transferToken(
-            stream.token,
-            address(this),
-            recipient,
-            recipientBalance,
-            true
-        );
-
-        stream.withdrawnShares += uint128(recipientBalance);
 
         depositedShares = _depositToken(
             stream.token,
@@ -260,8 +244,22 @@ contract FuroStream is
             fromBentoBox
         );
 
+        address recipient = ownerOf[streamId];
+
+        (, uint256 recipientBalance) = _streamBalanceOf(stream);
+
+        stream.startTime = uint64(block.timestamp);
+        stream.withdrawnShares = 0;
         stream.depositedShares += uint128(depositedShares);
         stream.endTime += extendTime;
+
+        _transferToken(
+            stream.token,
+            address(this),
+            recipient,
+            recipientBalance,
+            true
+        );
 
         emit UpdateStream(streamId, topUpAmount, extendTime, fromBentoBox);
     }
@@ -301,13 +299,13 @@ contract FuroStream is
         address token,
         address from,
         address to,
-        uint256 amount,
+        uint256 share,
         bool toBentoBox
     ) internal {
         if (toBentoBox) {
-            bentoBox.transfer(token, from, to, amount);
+            bentoBox.transfer(token, from, to, share);
         } else {
-            bentoBox.withdraw(token, from, to, 0, amount);
+            bentoBox.withdraw(token, from, to, 0, share);
         }
     }
 }

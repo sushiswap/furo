@@ -5,7 +5,6 @@ pragma solidity 0.8.10;
 import "./ITasker.sol";
 import "./IBentoBoxMinimal.sol";
 import "../utils/BoringBatchable.sol";
-import "../utils/BoringOwnable.sol";
 import "@rari-capital/solmate/src/tokens/ERC721.sol";
 
 interface IFuroStream {
@@ -45,7 +44,7 @@ interface IFuroStream {
         uint128 topUpAmount,
         uint64 extendTime,
         bool fromBentoBox
-    ) external returns (uint256 depositedShares);
+    ) external payable returns (uint256 depositedShares);
 
     function streamBalanceOf(uint256 streamId)
         external

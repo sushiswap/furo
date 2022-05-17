@@ -5,7 +5,6 @@ pragma solidity 0.8.10;
 import "./ITasker.sol";
 import "./IBentoBoxMinimal.sol";
 import "../utils/BoringBatchable.sol";
-import "../utils/BoringOwnable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@rari-capital/solmate/src/tokens/ERC721.sol";
 
@@ -25,8 +24,8 @@ interface IFuroVesting {
         uint32 cliffDuration,
         uint32 stepDuration,
         uint32 steps,
-        uint128 cliffAmount,
-        uint128 stepAmount,
+        uint128 cliffShares,
+        uint128 stepShares,
         bool fromBentoBox
     ) external payable returns (uint256 depositedShares, uint256 vestId);
 
@@ -49,8 +48,8 @@ interface IFuroVesting {
         uint32 cliffDuration;
         uint32 stepDuration;
         uint32 steps;
-        uint128 cliffAmount;
-        uint128 stepAmount;
+        uint128 cliffShares;
+        uint128 stepShares;
         uint128 claimed;
     }
 
@@ -63,8 +62,8 @@ interface IFuroVesting {
         uint32 cliffDuration,
         uint32 stepDuration,
         uint32 steps,
-        uint128 cliffAmount,
-        uint128 stepAmount,
+        uint128 cliffShares,
+        uint128 stepShares,
         bool fromBentoBox
     );
 
