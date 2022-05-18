@@ -85,7 +85,7 @@ contract FuroVesting is
 
         vests[vestId] = Vest({
             owner: msg.sender,
-            token: token,
+            token: address(token) == address(0) ? IERC20(wETH) : token,
             start: start,
             cliffDuration: cliffDuration,
             stepDuration: stepDuration,
@@ -218,26 +218,14 @@ contract FuroVesting is
         uint256 shares,
         bool fromBentoBox
     ) internal returns (uint256 depositedShares) {
-        if (
-            token == wETH &&
-            address(this).balance >=
-            bentoBox.toAmount(address(0), shares, false)
-        ) {
-            (, depositedShares) = bentoBox.deposit{
-                value: address(this).balance
-            }(address(0), from, to, address(this).balance, 0);
+        if (fromBentoBox) {
+            bentoBox.transfer(token, from, to, shares);
         } else {
-            if (fromBentoBox) {
-                bentoBox.transfer(token, from, to, shares);
-            } else {
-                (, depositedShares) = bentoBox.deposit(
-                    token,
-                    from,
-                    to,
-                    0,
-                    shares
-                );
-            }
+            (, depositedShares) = bentoBox.deposit{
+                value: token == address(0)
+                    ? bentoBox.toAmount(wETH, shares, false)
+                    : 0
+            }(token, from, to, 0, shares);
         }
     }
 
