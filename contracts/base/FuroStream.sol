@@ -22,6 +22,7 @@ contract FuroStream is
     error InvalidEndTime();
     error InvalidWithdrawTooMuch();
     error NotSender();
+    error Overflow();
 
     constructor(IBentoBoxMinimal _bentoBox, address _wETH) {
         bentoBox = _bentoBox;
@@ -247,12 +248,15 @@ contract FuroStream is
 
         address recipient = ownerOf[streamId];
 
-        (, uint256 recipientBalance) = _streamBalanceOf(stream);
+        (uint256 senderBalance, uint256 recipientBalance) = _streamBalanceOf(
+            stream
+        );
 
         stream.startTime = uint64(block.timestamp);
         stream.withdrawnShares = 0;
-        stream.depositedShares -= uint128(recipientBalance);
-        stream.depositedShares += uint128(depositedShares);
+        uint256 newDepositedShares = senderBalance + depositedShares;
+        if (newDepositedShares > type(uint128).max) revert Overflow();
+        stream.depositedShares += uint128(newDepositedShares);
         stream.endTime += extendTime;
 
         _transferToken(
