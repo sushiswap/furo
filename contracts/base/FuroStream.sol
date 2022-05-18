@@ -256,7 +256,7 @@ contract FuroStream is
         stream.withdrawnShares = 0;
         uint256 newDepositedShares = senderBalance + depositedShares;
         if (newDepositedShares > type(uint128).max) revert Overflow();
-        stream.depositedShares += uint128(newDepositedShares);
+        stream.depositedShares = uint128(newDepositedShares);
         stream.endTime += extendTime;
 
         _transferToken(
