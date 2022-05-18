@@ -134,7 +134,8 @@ contract FuroStream is
             toBentoBox
         );
 
-        if (taskData.length != 0 && msg.sender == recipient) ITasker(to).onTaskReceived(taskData);
+        if (taskData.length != 0 && msg.sender == recipient)
+            ITasker(to).onTaskReceived(taskData);
 
         emit Withdraw(
             streamId,
@@ -250,6 +251,7 @@ contract FuroStream is
 
         stream.startTime = uint64(block.timestamp);
         stream.withdrawnShares = 0;
+        stream.depositedShares -= uint128(recipientBalance);
         stream.depositedShares += uint128(depositedShares);
         stream.endTime += extendTime;
 
