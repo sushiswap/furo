@@ -85,7 +85,7 @@ contract FuroStream is
 
         streams[streamId] = Stream({
             sender: msg.sender,
-            token: token,
+            token: token == address(0) ? wETH : token,
             depositedShares: uint128(depositedShares), // @dev safe since we know bento returns u128
             withdrawnShares: 0,
             startTime: startTime,
@@ -277,27 +277,13 @@ contract FuroStream is
         uint256 amount,
         bool fromBentoBox
     ) internal returns (uint256 depositedShares) {
-        if (token == wETH && address(this).balance >= amount) {
-            (, depositedShares) = bentoBox.deposit{value: amount}(
-                address(0),
-                from,
-                to,
-                amount,
-                0
-            );
+        if (fromBentoBox) {
+            depositedShares = bentoBox.toShare(token, amount, false);
+            bentoBox.transfer(token, from, to, depositedShares);
         } else {
-            if (fromBentoBox) {
-                depositedShares = bentoBox.toShare(token, amount, false);
-                bentoBox.transfer(token, from, to, depositedShares);
-            } else {
-                (, depositedShares) = bentoBox.deposit(
-                    token,
-                    from,
-                    to,
-                    amount,
-                    0
-                );
-            }
+            (, depositedShares) = bentoBox.deposit{
+                value: token == address(0) ? amount : 0
+            }(token, from, to, amount, 0);
         }
     }
 

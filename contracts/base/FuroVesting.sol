@@ -16,6 +16,8 @@ contract FuroVesting is
 
     uint256 public vestIds;
 
+    uint256 public constant PERCENTAGE_PRECISION = 1e8;
+
     // custom errors
     error InvalidStart();
     error NotOwner();
@@ -60,14 +62,19 @@ contract FuroVesting is
         uint32 cliffDuration,
         uint32 stepDuration,
         uint32 steps,
-        uint128 cliffShares,
-        uint128 stepShares,
+        uint128 stepPercentage,
+        uint128 amount,
         bool fromBentoBox
     )
         external
         payable
         override
-        returns (uint256 depositedShares, uint256 vestId)
+        returns (
+            uint256 depositedShares,
+            uint256 vestId,
+            uint128 stepShares,
+            uint128 cliffShares
+        )
     {
         if (start < block.timestamp) revert InvalidStart();
         if (stepDuration == 0 || steps == 0) revert InvalidStepSetting();
@@ -76,16 +83,20 @@ contract FuroVesting is
             address(token),
             msg.sender,
             address(this),
-            cliffShares + (stepShares * steps),
+            amount,
             fromBentoBox
         );
+        stepShares = uint128(
+            (stepPercentage * depositedShares) / PERCENTAGE_PRECISION
+        );
+        cliffShares = uint128(depositedShares - (stepShares * steps));
 
         vestId = vestIds++;
         _mint(recipient, vestId);
 
         vests[vestId] = Vest({
             owner: msg.sender,
-            token: token,
+            token: address(token) == address(0) ? IERC20(wETH) : token,
             start: start,
             cliffDuration: cliffDuration,
             stepDuration: stepDuration,
@@ -95,19 +106,7 @@ contract FuroVesting is
             claimed: 0
         });
 
-        emit CreateVesting(
-            vestId,
-            token,
-            msg.sender,
-            recipient,
-            start,
-            cliffDuration,
-            stepDuration,
-            steps,
-            cliffShares,
-            stepShares,
-            fromBentoBox
-        );
+        emit CreateVesting(vestId, vests[vestId]);
     }
 
     function withdraw(
@@ -215,29 +214,16 @@ contract FuroVesting is
         address token,
         address from,
         address to,
-        uint256 shares,
+        uint256 amount,
         bool fromBentoBox
     ) internal returns (uint256 depositedShares) {
-        if (
-            token == wETH &&
-            address(this).balance >=
-            bentoBox.toAmount(address(0), shares, false)
-        ) {
-            (, depositedShares) = bentoBox.deposit{
-                value: address(this).balance
-            }(address(0), from, to, address(this).balance, 0);
+        if (fromBentoBox) {
+            depositedShares = bentoBox.toShare(token, amount, false);
+            bentoBox.transfer(token, from, to, depositedShares);
         } else {
-            if (fromBentoBox) {
-                bentoBox.transfer(token, from, to, shares);
-            } else {
-                (, depositedShares) = bentoBox.deposit(
-                    token,
-                    from,
-                    to,
-                    0,
-                    shares
-                );
-            }
+            (, depositedShares) = bentoBox.deposit{
+                value: token == address(0) ? amount : 0
+            }(token, from, to, amount, 0);
         }
     }
 

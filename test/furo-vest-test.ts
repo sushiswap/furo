@@ -1,7 +1,7 @@
 // @ts-nocheck
 
 import { ethers } from "hardhat";
-import { Signer, BigNumber } from "ethers";
+import { Signer, BigNumber, utils } from "ethers";
 import { expect } from "chai";
 import {
   getBentoBalance,
@@ -24,8 +24,8 @@ describe("Create Vest", () => {
   let tokens = [];
 
   let startTime;
-  let cliffAmount = getBigNumber(100);
-  let stepAmount = getBigNumber(50);
+  let amount = getBigNumber(250);
+  let stepPercentage = utils.parseUnits("20", 6);
   let steps = 3;
 
   before(async function () {
@@ -114,8 +114,8 @@ describe("Create Vest", () => {
       ONE_YEAR,
       ONE_MONTH,
       steps,
-      cliffAmount,
-      stepAmount,
+      stepPercentage,
+      amount,
       true
     );
     const postBentoBalanceFuro = await getBentoBalance(
@@ -132,17 +132,21 @@ describe("Create Vest", () => {
       tokens[0],
       accounts[0].address
     );
+
     const vestData = await furoVesting.vests(preVestId);
 
     expect(vestNFTOwner).to.be.eq(accounts[1].address);
     expect(vestData.owner).to.be.eq(accounts[0].address);
-
     expect(postVestIds).to.be.eq(preVestId.add(1));
     expect(postUserTokenBalance).to.be.eq(
-      preUserTokenBalance.sub(cliffAmount.add(stepAmount.mul(steps)))
+      preUserTokenBalance.sub(
+        vestData.cliffShares.add(vestData.stepShares.mul(vestData.steps))
+      )
     );
     expect(postBentoBalanceFuro).to.be.eq(
-      preBentoBalanceFuro.add(cliffAmount.add(stepAmount.mul(steps)))
+      preBentoBalanceFuro.add(
+        vestData.cliffShares.add(vestData.stepShares.mul(vestData.steps))
+      )
     );
   });
 
@@ -161,8 +165,8 @@ describe("Create Vest", () => {
       ONE_YEAR,
       ONE_MONTH,
       steps,
-      cliffAmount,
-      stepAmount,
+      stepPercentage,
+      amount,
       false
     );
     const postBentoBalanceFuro = await getBentoBalance(
@@ -182,10 +186,14 @@ describe("Create Vest", () => {
 
     expect(postVestIds).to.be.eq(preVestId.add(1));
     expect(postUserTokenBalance).to.be.eq(
-      preUserTokenBalance.sub(cliffAmount.add(stepAmount.mul(steps)))
+      preUserTokenBalance.sub(
+        vestData.cliffShares.add(vestData.stepShares.mul(vestData.steps))
+      )
     );
     expect(postBentoBalanceFuro).to.be.eq(
-      preBentoBalanceFuro.add(cliffAmount.add(stepAmount.mul(steps)))
+      preBentoBalanceFuro.add(
+        vestData.cliffShares.add(vestData.stepShares.mul(vestData.steps))
+      )
     );
   });
 
@@ -198,8 +206,8 @@ describe("Create Vest", () => {
         ONE_YEAR,
         ONE_MONTH,
         steps,
-        cliffAmount,
-        stepAmount,
+        stepPercentage,
+        amount,
         false
       )
     ).to.be.revertedWith("InvalidStart()");
@@ -216,6 +224,8 @@ describe("Balances", () => {
   let tokens = [];
 
   let startTime;
+  let amount = getBigNumber(250);
+  let stepPercentage = utils.parseUnits("20", 6);
   let cliffAmount = getBigNumber(100);
   let stepAmount = getBigNumber(50);
   let steps = 3;
@@ -288,8 +298,8 @@ describe("Balances", () => {
       ONE_YEAR,
       ONE_MONTH,
       steps,
-      cliffAmount,
-      stepAmount,
+      stepPercentage,
+      amount,
       true
     );
   });
@@ -338,6 +348,8 @@ describe("Withdraw", () => {
   let tokens = [];
 
   let startTime;
+  let amount = getBigNumber(250);
+  let stepPercentage = utils.parseUnits("20", 6);
   let cliffAmount = getBigNumber(100);
   let stepAmount = getBigNumber(50);
   let steps = 3;
@@ -410,8 +422,8 @@ describe("Withdraw", () => {
       ONE_YEAR,
       ONE_MONTH,
       steps,
-      cliffAmount,
-      stepAmount,
+      stepPercentage,
+      amount,
       true
     );
   });
@@ -466,6 +478,8 @@ describe("Vest Owner Operations", () => {
   let tokens = [];
 
   let startTime;
+  let amount = getBigNumber(250);
+  let stepPercentage = utils.parseUnits("20", 6);
   let cliffAmount = getBigNumber(100);
   let stepAmount = getBigNumber(50);
   let steps = 3;
@@ -538,8 +552,8 @@ describe("Vest Owner Operations", () => {
       ONE_YEAR,
       ONE_MONTH,
       steps,
-      cliffAmount,
-      stepAmount,
+      stepPercentage,
+      amount,
       true
     );
   });

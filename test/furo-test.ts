@@ -418,7 +418,7 @@ describe("Stream Creation via Native Token", function () {
 
     await furoStream.createStream(
       accounts[1].address,
-      weth.address,
+      ADDRESS_ZERO,
       startTime,
       endTime,
       amountToDeposit,
