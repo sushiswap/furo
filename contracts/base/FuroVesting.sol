@@ -16,7 +16,7 @@ contract FuroVesting is
 
     uint256 public vestIds;
 
-    uint256 public constant PERCENTAGE_PRECISION = 1e8;
+    uint256 public constant PERCENTAGE_PRECISION = 1e18;
 
     // custom errors
     error InvalidStart();

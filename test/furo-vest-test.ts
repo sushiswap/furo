@@ -25,7 +25,7 @@ describe("Create Vest", () => {
 
   let startTime;
   let amount = getBigNumber(250);
-  let stepPercentage = utils.parseUnits("20", 6);
+  let stepPercentage = utils.parseUnits("20", 16);
   let steps = 3;
 
   before(async function () {
@@ -226,7 +226,7 @@ describe("Balances", () => {
 
   let startTime;
   let amount = getBigNumber(250);
-  let stepPercentage = utils.parseUnits("20", 6);
+  let stepPercentage = utils.parseUnits("20", 16);
   let cliffAmount = getBigNumber(100);
   let stepAmount = getBigNumber(50);
   let steps = 3;
@@ -350,7 +350,7 @@ describe("Withdraw", () => {
 
   let startTime;
   let amount = getBigNumber(250);
-  let stepPercentage = utils.parseUnits("20", 6);
+  let stepPercentage = utils.parseUnits("20", 16);
   let cliffAmount = getBigNumber(100);
   let stepAmount = getBigNumber(50);
   let steps = 3;
@@ -480,7 +480,7 @@ describe("Vest Owner Operations", () => {
 
   let startTime;
   let amount = getBigNumber(250);
-  let stepPercentage = utils.parseUnits("20", 6);
+  let stepPercentage = utils.parseUnits("20", 16);
   let cliffAmount = getBigNumber(100);
   let stepAmount = getBigNumber(50);
   let steps = 3;
