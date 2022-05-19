@@ -24,10 +24,18 @@ interface IFuroVesting {
         uint32 cliffDuration,
         uint32 stepDuration,
         uint32 steps,
-        uint128 cliffShares,
-        uint128 stepShares,
+        uint128 stepPercentage,
+        uint128 amount,
         bool fromBentoBox
-    ) external payable returns (uint256 depositedShares, uint256 vestId);
+    )
+        external
+        payable
+        returns (
+            uint256 depositedShares,
+            uint256 vestId,
+            uint128 stepShares,
+            uint128 cliffShares
+        );
 
     function withdraw(
         uint256 vestId,
@@ -53,19 +61,7 @@ interface IFuroVesting {
         uint128 claimed;
     }
 
-    event CreateVesting(
-        uint256 indexed vestId,
-        IERC20 token,
-        address indexed owner,
-        address indexed recipient,
-        uint32 start,
-        uint32 cliffDuration,
-        uint32 stepDuration,
-        uint32 steps,
-        uint128 cliffShares,
-        uint128 stepShares,
-        bool fromBentoBox
-    );
+    event CreateVesting(uint256 indexed vestId, Vest indexed v);
 
     event Withdraw(
         uint256 indexed vestId,
