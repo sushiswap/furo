@@ -8,6 +8,9 @@ artifacts/
 # Deployments
 deployments/
 
+# Typechain
+typechain/
+
 # Env
 .env
 
