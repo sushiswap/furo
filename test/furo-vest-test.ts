@@ -107,17 +107,17 @@ describe("Create Vest", () => {
       tokens[0],
       furoVesting.address
     );
-    await furoVesting.createVesting(
-      tokens[0].address,
-      accounts[1].address,
-      startTime,
-      ONE_YEAR,
-      ONE_MONTH,
-      steps,
-      stepPercentage,
-      amount,
-      true
-    );
+    await furoVesting.createVesting({
+      token: tokens[0].address,
+      recipient: accounts[1].address,
+      start: startTime,
+      cliffDuration: ONE_YEAR,
+      stepDuration: ONE_MONTH,
+      steps: steps,
+      stepPercentage: stepPercentage,
+      amount: amount,
+      fromBentoBox: true,
+    });
     const postBentoBalanceFuro = await getBentoBalance(
       bento,
       tokens[0],
@@ -158,17 +158,18 @@ describe("Create Vest", () => {
       tokens[0],
       furoVesting.address
     );
-    await furoVesting.createVesting(
-      tokens[0].address,
-      accounts[1].address,
-      startTime,
-      ONE_YEAR,
-      ONE_MONTH,
-      steps,
-      stepPercentage,
-      amount,
-      false
-    );
+    await furoVesting.createVesting({
+      token: tokens[0].address,
+      recipient: accounts[1].address,
+      start: startTime,
+      cliffDuration: ONE_YEAR,
+      stepDuration: ONE_MONTH,
+      steps: steps,
+      stepPercentage: stepPercentage,
+      amount: amount,
+      fromBentoBox: false,
+    });
+
     const postBentoBalanceFuro = await getBentoBalance(
       bento,
       tokens[0],
@@ -199,17 +200,17 @@ describe("Create Vest", () => {
 
   it("should not allow to create vest with old start", async function () {
     await expect(
-      furoVesting.createVesting(
-        tokens[0].address,
-        accounts[1].address,
-        startTime.sub(1000),
-        ONE_YEAR,
-        ONE_MONTH,
-        steps,
-        stepPercentage,
-        amount,
-        false
-      )
+      furoVesting.createVesting({
+        token: tokens[0].address,
+        recipient: accounts[1].address,
+        start: startTime.sub(1000),
+        cliffDuration: ONE_YEAR,
+        stepDuration: ONE_MONTH,
+        steps: steps,
+        stepPercentage: stepPercentage,
+        amount: amount,
+        fromBentoBox: true,
+      })
     ).to.be.revertedWith("InvalidStart()");
   });
 });
@@ -291,17 +292,17 @@ describe("Balances", () => {
 
     vestId = await furoVesting.vestIds();
 
-    await furoVesting.createVesting(
-      tokens[0].address,
-      accounts[1].address,
-      startTime,
-      ONE_YEAR,
-      ONE_MONTH,
-      steps,
-      stepPercentage,
-      amount,
-      true
-    );
+    await furoVesting.createVesting({
+      token: tokens[0].address,
+      recipient: accounts[1].address,
+      start: startTime,
+      cliffDuration: ONE_YEAR,
+      stepDuration: ONE_MONTH,
+      steps: steps,
+      stepPercentage: stepPercentage,
+      amount: amount,
+      fromBentoBox: true,
+    });
   });
 
   beforeEach(async function () {
@@ -415,17 +416,17 @@ describe("Withdraw", () => {
 
     vestId = await furoVesting.vestIds();
 
-    await furoVesting.createVesting(
-      tokens[0].address,
-      accounts[1].address,
-      startTime,
-      ONE_YEAR,
-      ONE_MONTH,
-      steps,
-      stepPercentage,
-      amount,
-      true
-    );
+    await furoVesting.createVesting({
+      token: tokens[0].address,
+      recipient: accounts[1].address,
+      start: startTime,
+      cliffDuration: ONE_YEAR,
+      stepDuration: ONE_MONTH,
+      steps: steps,
+      stepPercentage: stepPercentage,
+      amount: amount,
+      fromBentoBox: true,
+    });
   });
 
   beforeEach(async function () {
@@ -545,17 +546,17 @@ describe("Vest Owner Operations", () => {
 
     vestId = await furoVesting.vestIds();
 
-    await furoVesting.createVesting(
-      tokens[0].address,
-      accounts[1].address,
-      startTime,
-      ONE_YEAR,
-      ONE_MONTH,
-      steps,
-      stepPercentage,
-      amount,
-      true
-    );
+    await furoVesting.createVesting({
+      token: tokens[0].address,
+      recipient: accounts[1].address,
+      start: startTime,
+      cliffDuration: ONE_YEAR,
+      stepDuration: ONE_MONTH,
+      steps: steps,
+      stepPercentage: stepPercentage,
+      amount: amount,
+      fromBentoBox: true,
+    });
   });
 
   beforeEach(async function () {

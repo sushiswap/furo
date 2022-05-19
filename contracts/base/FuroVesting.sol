@@ -55,17 +55,7 @@ contract FuroVesting is
         );
     }
 
-    function createVesting(
-        IERC20 token,
-        address recipient,
-        uint32 start,
-        uint32 cliffDuration,
-        uint32 stepDuration,
-        uint32 steps,
-        uint128 stepPercentage,
-        uint128 amount,
-        bool fromBentoBox
-    )
+    function createVesting(VestParams calldata vestParams)
         external
         payable
         override
@@ -76,37 +66,54 @@ contract FuroVesting is
             uint128 cliffShares
         )
     {
-        if (start < block.timestamp) revert InvalidStart();
-        if (stepDuration == 0 || steps == 0) revert InvalidStepSetting();
+        if (vestParams.start < block.timestamp) revert InvalidStart();
+        if (vestParams.stepDuration == 0 || vestParams.steps == 0)
+            revert InvalidStepSetting();
 
         depositedShares = _depositToken(
-            address(token),
+            address(vestParams.token),
             msg.sender,
             address(this),
-            amount,
-            fromBentoBox
+            vestParams.amount,
+            vestParams.fromBentoBox
         );
         stepShares = uint128(
-            (stepPercentage * depositedShares) / PERCENTAGE_PRECISION
+            (vestParams.stepPercentage * depositedShares) / PERCENTAGE_PRECISION
         );
-        cliffShares = uint128(depositedShares - (stepShares * steps));
+        cliffShares = uint128(
+            depositedShares - (stepShares * vestParams.steps)
+        );
 
         vestId = vestIds++;
-        _mint(recipient, vestId);
+        _mint(vestParams.recipient, vestId);
 
         vests[vestId] = Vest({
             owner: msg.sender,
-            token: address(token) == address(0) ? IERC20(wETH) : token,
-            start: start,
-            cliffDuration: cliffDuration,
-            stepDuration: stepDuration,
-            steps: steps,
+            token: address(vestParams.token) == address(0)
+                ? IERC20(wETH)
+                : vestParams.token,
+            start: vestParams.start,
+            cliffDuration: vestParams.cliffDuration,
+            stepDuration: vestParams.stepDuration,
+            steps: vestParams.steps,
             cliffShares: cliffShares,
             stepShares: stepShares,
             claimed: 0
         });
 
-        emit CreateVesting(vestId, vests[vestId]);
+        emit CreateVesting(
+            vestId,
+            vestParams.token,
+            msg.sender,
+            vestParams.recipient,
+            vestParams.start,
+            vestParams.cliffDuration,
+            vestParams.stepDuration,
+            vestParams.steps,
+            cliffShares,
+            stepShares,
+            vestParams.fromBentoBox
+        );
     }
 
     function withdraw(

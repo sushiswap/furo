@@ -17,17 +17,7 @@ interface IFuroVesting {
         bytes32 s
     ) external;
 
-    function createVesting(
-        IERC20 token,
-        address recipient,
-        uint32 start,
-        uint32 cliffDuration,
-        uint32 stepDuration,
-        uint32 steps,
-        uint128 stepPercentage,
-        uint128 amount,
-        bool fromBentoBox
-    )
+    function createVesting(VestParams calldata vestParams)
         external
         payable
         returns (
@@ -49,6 +39,18 @@ interface IFuroVesting {
 
     function updateOwner(uint256 vestId, address newOwner) external;
 
+    struct VestParams {
+        IERC20 token;
+        address recipient;
+        uint32 start;
+        uint32 cliffDuration;
+        uint32 stepDuration;
+        uint32 steps;
+        uint128 stepPercentage;
+        uint128 amount;
+        bool fromBentoBox;
+    }
+
     struct Vest {
         address owner;
         IERC20 token;
@@ -61,7 +63,19 @@ interface IFuroVesting {
         uint128 claimed;
     }
 
-    event CreateVesting(uint256 indexed vestId, Vest indexed v);
+    event CreateVesting(
+        uint256 indexed vestId,
+        IERC20 token,
+        address indexed owner,
+        address indexed recipient,
+        uint32 start,
+        uint32 cliffDuration,
+        uint32 stepDuration,
+        uint32 steps,
+        uint128 cliffShares,
+        uint128 stepShares,
+        bool fromBentoBox
+    );
 
     event Withdraw(
         uint256 indexed vestId,
