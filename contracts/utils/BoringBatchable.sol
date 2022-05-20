@@ -12,6 +12,8 @@ pragma solidity 0.8.10;
 import "../interfaces/IERC20.sol";
 
 contract BaseBoringBatchable {
+    error BatchError(bytes innerError);
+
     /// @dev Helper function to extract a useful revert message from a failed call.
     /// If the returned data is malformed or not correctly abi encoded then this call can fail itself.
     function _getRevertMsg(bytes memory _returnData)
@@ -20,7 +22,7 @@ contract BaseBoringBatchable {
         returns (string memory)
     {
         // If the _res length is less than 68, then the transaction failed silently (without a revert message)
-        if (_returnData.length < 68) return "Transaction reverted silently";
+        if (_returnData.length < 68) revert BatchError(_returnData);
 
         assembly {
             // Slice the sighash.
@@ -33,7 +35,7 @@ contract BaseBoringBatchable {
     /// @param calls An array of inputs for each call.
     /// @param revertOnFail If True then reverts after a failed call and stops doing further calls.
     // F1: External is ok here because this is the batch function, adding it to a batch makes no sense
-    // F2: Calls in the batch may be payable, delegatecall operates in the same context, 
+    // F2: Calls in the batch may be payable, delegatecall operates in the same context,
     // so each call in the batch has access to msg.value
     // C3: The length of the loop is fully under user control, so can't be exploited
     // C7: Delegatecall is only used on the same contract, so it's safe
