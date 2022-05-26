@@ -7,12 +7,15 @@ import "../interfaces/IFuroStream.sol";
 contract FuroStream is
     IFuroStream,
     ERC721("Furo Stream", "FUROSTREAM"),
-    BoringBatchable
+    BoringBatchable,
+    BoringOwnable
 {
     IBentoBoxMinimal public immutable bentoBox;
     address public immutable wETH;
 
     uint256 public streamIds;
+
+    address public tokenURIFetcher;
 
     mapping(uint256 => Stream) public streams;
 
@@ -31,12 +34,13 @@ contract FuroStream is
         _bentoBox.registerProtocol();
     }
 
-    function tokenURI(uint256 id)
-        public
-        view
-        override
-        returns (string memory)
-    {}
+    function setTokenURIFetcher(address _fetcher) external onlyOwner {
+        tokenURIFetcher = _fetcher;
+    }
+
+    function tokenURI(uint256 id) public view override returns (string memory) {
+        return ITokenURIFetcher(tokenURIFetcher).fetchTokenURIData(id);
+    }
 
     function setBentoBoxApproval(
         address user,

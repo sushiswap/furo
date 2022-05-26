@@ -7,10 +7,13 @@ import "../interfaces/IFuroVesting.sol";
 contract FuroVesting is
     IFuroVesting,
     ERC721("Furo Vesting", "FUROVEST"),
-    BoringBatchable
+    BoringBatchable,
+    BoringOwnable
 {
     IBentoBoxMinimal public immutable bentoBox;
     address public immutable wETH;
+
+    address public tokenURIFetcher;
 
     mapping(uint256 => Vest) public vests;
 
@@ -31,12 +34,13 @@ contract FuroVesting is
         _bentoBox.registerProtocol();
     }
 
-    function tokenURI(uint256 id)
-        public
-        view
-        override
-        returns (string memory)
-    {}
+    function setTokenURIFetcher(address _fetcher) external onlyOwner {
+        tokenURIFetcher = _fetcher;
+    }
+
+    function tokenURI(uint256 id) public view override returns (string memory) {
+        return ITokenURIFetcher(tokenURIFetcher).fetchTokenURIData(id);
+    }
 
     function setBentoBoxApproval(
         address user,
