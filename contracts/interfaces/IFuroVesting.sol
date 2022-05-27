@@ -18,7 +18,7 @@ interface IFuroVesting {
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external;
+    ) external payable;
 
     function createVesting(VestParams calldata vestParams)
         external

@@ -48,7 +48,7 @@ contract FuroVesting is
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external override {
+    ) external payable override {
         bentoBox.setMasterContractApproval(
             user,
             address(this),

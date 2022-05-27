@@ -16,7 +16,7 @@ interface IFuroStream {
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external;
+    ) external payable;
 
     function createStream(
         address recipient,
