@@ -5,7 +5,7 @@ pragma solidity 0.8.10;
 import "./ITasker.sol";
 import "./ITokenURIFetcher.sol";
 import "./IBentoBoxMinimal.sol";
-import "../utils/BoringBatchable.sol";
+import "../utils/MultiCall.sol";
 import "../utils/BoringOwnable.sol";
 import "@rari-capital/solmate/src/tokens/ERC721.sol";
 

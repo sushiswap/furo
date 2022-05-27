@@ -3,9 +3,10 @@
 pragma solidity 0.8.10;
 
 import "./ITasker.sol";
+import "./IERC20.sol";
 import "./ITokenURIFetcher.sol";
 import "./IBentoBoxMinimal.sol";
-import "../utils/BoringBatchable.sol";
+import "../utils/MultiCall.sol";
 import "../utils/BoringOwnable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@rari-capital/solmate/src/tokens/ERC721.sol";

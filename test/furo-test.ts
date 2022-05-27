@@ -1342,9 +1342,8 @@ describe("Stream Creation - Batchable", function () {
         false,
       ]
     );
-    await furoStream.batch(
-      [masterContractApprovalData, createStreamData],
-      true
+    await furoStream.multicall(
+      [masterContractApprovalData, createStreamData]
     );
     const newStreamId = await snapshotStreamId(furoStream);
     const newStreamData = await snapshotStreamData(furoStream, oldStreamId);

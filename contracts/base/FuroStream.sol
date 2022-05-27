@@ -7,7 +7,7 @@ import "../interfaces/IFuroStream.sol";
 contract FuroStream is
     IFuroStream,
     ERC721("Furo Stream", "FUROSTREAM"),
-    BoringBatchable,
+    Multicall,
     BoringOwnable
 {
     IBentoBoxMinimal public immutable bentoBox;

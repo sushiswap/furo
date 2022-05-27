@@ -7,7 +7,7 @@ import "../interfaces/IFuroVesting.sol";
 contract FuroVesting is
     IFuroVesting,
     ERC721("Furo Vesting", "FUROVEST"),
-    BoringBatchable,
+    Multicall,
     BoringOwnable
 {
     IBentoBoxMinimal public immutable bentoBox;
