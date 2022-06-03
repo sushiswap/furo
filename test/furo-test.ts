@@ -235,27 +235,6 @@ describe("Stream Creation", function () {
     ).to.be.revertedWith(customError("NotSender"));
   });
 
-  it("should not be able create stream when startTime is less than block.timestamp", async function () {
-    const startTime = await latest();
-    const endTime = startTime.add(BigNumber.from(3600));
-
-    const amount = getBigNumber(10000);
-    const amountToShares = await toShare(bento, tokens[0], amount);
-
-    const amountToDeposit = amountToShares;
-
-    await expect(
-      furoStream.createStream(
-        accounts[1].address,
-        tokens[0].address,
-        startTime,
-        endTime,
-        amountToDeposit,
-        true
-      )
-    ).to.be.revertedWith(customError("InvalidStartTime"));
-  });
-
   it("should not be able create stream when endTime is less than startTime", async function () {
     await expect(
       furoStream.createStream(
@@ -1342,9 +1321,7 @@ describe("Stream Creation - Batchable", function () {
         false,
       ]
     );
-    await furoStream.multicall(
-      [masterContractApprovalData, createStreamData]
-    );
+    await furoStream.multicall([masterContractApprovalData, createStreamData]);
     const newStreamId = await snapshotStreamId(furoStream);
     const newStreamData = await snapshotStreamData(furoStream, oldStreamId);
     const tokenBalanceAfter = await tokens[0].balanceOf(accounts[0].address);

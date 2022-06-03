@@ -72,7 +72,6 @@ contract FuroStream is
         override
         returns (uint256 streamId, uint256 depositedShares)
     {
-        if (startTime < block.timestamp) revert InvalidStartTime();
         if (endTime <= startTime) revert InvalidEndTime();
 
         depositedShares = _depositToken(
