@@ -70,6 +70,7 @@ contract FuroVesting is
             uint128 cliffShares
         )
     {
+        if (vestParams.start < block.timestamp) revert InvalidStart();
         if (vestParams.stepPercentage > PERCENTAGE_PRECISION)
             revert InvalidStepSetting();
         if (vestParams.stepDuration == 0 || vestParams.steps == 0)

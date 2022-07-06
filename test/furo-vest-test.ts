@@ -197,6 +197,22 @@ describe("Create Vest", () => {
       )
     );
   });
+
+  it("should not allow to create vest with old start", async function () {
+    await expect(
+      furoVesting.createVesting({
+        token: tokens[0].address,
+        recipient: accounts[1].address,
+        start: startTime.sub(1000),
+        cliffDuration: ONE_YEAR,
+        stepDuration: ONE_MONTH,
+        steps: steps,
+        stepPercentage: stepPercentage,
+        amount: amount,
+        fromBentoBox: true,
+      })
+    ).to.be.revertedWith("InvalidStart()");
+  });
 });
 
 describe("Balances", () => {
