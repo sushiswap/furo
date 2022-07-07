@@ -17,7 +17,7 @@ contract TornadoTasker is ITasker {
 
     receive() external payable {}
 
-    function onTaskReceived(bytes calldata data) external override payable {
+    function onTaskReceived(bytes calldata data) external override {
         // decode data for task
         (address _receiver, bytes memory _data) = abi.decode(data, (address, bytes));
         // fetch wETH balance and convert to ETH
