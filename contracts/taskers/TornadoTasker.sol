@@ -5,8 +5,11 @@ pragma solidity 0.8.10;
 import "../interfaces/ITasker.sol";
 import "../interfaces/IL1Helper.sol";
 import "../interfaces/IWETH.sol";
+import "../utils/BoringBatchable.sol";
+import "../taskers/SushiLegacySwapTasker.sol";
+import "../taskers/TridentSwapTasker.sol";
 
-contract TornadoTasker is ITasker {
+contract TornadoTasker is ITasker, BoringBatchable, SushiLegacySwapTasker, TridentSwapTasker {
     IL1Helper private immutable l1Helper;
     IWETH private immutable weth;
 
