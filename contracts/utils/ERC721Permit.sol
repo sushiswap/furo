@@ -18,15 +18,16 @@ abstract contract ERC721Permit is ERC721, Domain {
     //////////////////////////////////////////////////////////////*/
 
     function permit(
-        address owner,
         address spender,
-        uint256 id,
+        uint256 tokenId,
         uint256 deadline,
         uint8 v,
         bytes32 r,
         bytes32 s
     ) public virtual {
         require(deadline >= block.timestamp, "PERMIT_DEADLINE_EXPIRED");
+        
+        address owner = ownerOf[tokenId];
 
         // Unchecked because the only math done is incrementing
         // the owner's nonce which cannot realistically overflow.
@@ -39,11 +40,10 @@ abstract contract ERC721Permit is ERC721, Domain {
                         keccak256(
                             abi.encode(
                                 keccak256(
-                                    "Permit(address owner,address spender,uint256 id,uint256 nonce,uint256 deadline)"
+                                    "Permit(address spender,uint256 tokenId,uint256 nonce,uint256 deadline)"
                                 ),
-                                owner,
                                 spender,
-                                id,
+                                tokenId,
                                 nonces[owner]++,
                                 deadline
                             )
