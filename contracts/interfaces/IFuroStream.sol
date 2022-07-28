@@ -7,7 +7,7 @@ import "./ITokenURIFetcher.sol";
 import "./IBentoBoxMinimal.sol";
 import "../utils/MultiCall.sol";
 import "../utils/BoringOwnable.sol";
-import "@rari-capital/solmate/src/tokens/ERC721.sol";
+import "../utils/ERC721Permit.sol";
 
 interface IFuroStream {
     function setBentoBoxApproval(
