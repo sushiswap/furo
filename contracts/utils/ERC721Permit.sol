@@ -57,9 +57,9 @@ abstract contract ERC721Permit is ERC721, Domain {
 
             require(recoveredAddress != address(0) && recoveredAddress == owner, "INVALID_SIGNER");
 
-            getApproved[id] = spender;
+            getApproved[tokenId] = spender;
         }
 
-        emit Approval(owner, spender, id);
+        emit Approval(owner, spender, tokenId);
     }
 }
