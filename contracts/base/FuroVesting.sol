@@ -6,7 +6,7 @@ import "../interfaces/IFuroVesting.sol";
 
 contract FuroVesting is
     IFuroVesting,
-    ERC721("Furo Vesting", "FUROVEST"),
+    ERC721Permit("Furo Vesting", "FUROVEST"),
     Multicall,
     BoringOwnable
 {
