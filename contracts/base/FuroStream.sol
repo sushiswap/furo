@@ -6,7 +6,7 @@ import "../interfaces/IFuroStream.sol";
 
 contract FuroStream is
     IFuroStream,
-    ERC721("Furo Stream", "FUROSTREAM"),
+    ERC721Permit("Furo Stream", "FUROSTREAM"),
     Multicall,
     BoringOwnable
 {
