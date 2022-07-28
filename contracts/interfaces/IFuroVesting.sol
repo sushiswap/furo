@@ -9,7 +9,7 @@ import "./IBentoBoxMinimal.sol";
 import "../utils/MultiCall.sol";
 import "../utils/BoringOwnable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
-import "@rari-capital/solmate/src/tokens/ERC721.sol";
+import "../utils/ERC721Permit.sol";
 
 interface IFuroVesting {
     function setBentoBoxApproval(
