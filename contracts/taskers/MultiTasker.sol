@@ -6,6 +6,8 @@ pragma solidity 0.8.15;
 /// @author Modified from Gnosis Safe MultiSendCallOnly
 /// (https://github.com/safe-global/safe-contracts/blob/main/contracts/libraries/MultiSendCallOnly.sol)
 contract MultiTasker {
+    receive() external payable {}
+    
     /// @dev Sends multiple transactions and reverts all if one fails.
     /// @param transactions Encoded transactions. Each transaction is encoded as a packed bytes of
     ///                     operation has to be uint8(0) in this version (=> 1 byte),
